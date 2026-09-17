@@ -11,6 +11,13 @@ public class Transaction {
     private String type;
     private LocalDate date;
 
+public Transaction(String description, BigDecimal amount, String type, LocalDate date) {
+    this.description = description;
+    this.amount = amount;
+    this.type = type;
+    this.date = date;
+}
+
     public Long getId() {
         return id;
     }
