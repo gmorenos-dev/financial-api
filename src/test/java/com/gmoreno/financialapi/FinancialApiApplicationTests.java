@@ -5,6 +5,9 @@ import com.gmoreno.financialapi.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Optional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -55,10 +58,17 @@ class FinancialApiApplicationTests {
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         assertNotNull(savedTransaction.getId());
-        assertEquals("Teste Repository", savedTransaction.getDescription());
-        assertEquals(amount, savedTransaction.getAmount());
-        assertEquals("EXPENSE", savedTransaction.getType());
-        assertEquals(date, savedTransaction.getDate());
-    }
 
+        Optional<Transaction> foundTransaction =
+                transactionRepository.findById(savedTransaction.getId());
+
+        assertTrue(foundTransaction.isPresent());
+
+        Transaction retrievedTransaction = foundTransaction.get();
+
+        assertEquals("Teste Repository", retrievedTransaction.getDescription());
+        assertEquals(amount, retrievedTransaction.getAmount());
+        assertEquals("EXPENSE", retrievedTransaction.getType());
+        assertEquals(date, retrievedTransaction.getDate());
+    }
 }
