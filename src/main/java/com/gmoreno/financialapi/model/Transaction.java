@@ -1,15 +1,25 @@
 package com.gmoreno.financialapi.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity
 public class Transaction {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String description;
     private BigDecimal amount;
     private String type;
     private LocalDate date;
+
+protected Transaction() {
+}
 
 public Transaction(String description, BigDecimal amount, String type, LocalDate date) {
     this.description = description;
