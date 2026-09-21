@@ -8,12 +8,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
+import java.util.List;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 class FinancialApiApplicationTests {
@@ -55,20 +57,48 @@ class FinancialApiApplicationTests {
                 date
         );
 
-        Transaction savedTransaction = transactionRepository.save(transaction);
+       Transaction savedTransaction = transactionRepository.save(transaction);
 
-        assertNotNull(savedTransaction.getId());
+       assertNotNull(savedTransaction.getId());
 
-        Optional<Transaction> foundTransaction =
-                transactionRepository.findById(savedTransaction.getId());
-
-        assertTrue(foundTransaction.isPresent());
-
-        Transaction retrievedTransaction = foundTransaction.get();
-
-        assertEquals("Teste Repository", retrievedTransaction.getDescription());
-        assertEquals(amount, retrievedTransaction.getAmount());
-        assertEquals("EXPENSE", retrievedTransaction.getType());
-        assertEquals(date, retrievedTransaction.getDate());
     }
+
+    @Test
+    void shouldFindTransactionById() {
+       LocalDate date = LocalDate.of(2026, 9, 21);
+       BigDecimal amount = new BigDecimal("300.00");
+
+       Transaction transaction = new Transaction(
+              "Teste FindById",
+              amount,
+              "INCOME",
+              date
+       );
+
+       Transaction savedTransaction = transactionRepository.save(transaction);
+
+       Optional<Transaction> foundTransaction =
+               transactionRepository.findById(savedTransaction.getId());
+
+       assertTrue(foundTransaction.isPresent());
+
+       Transaction retrievedTransaction = foundTransaction.get();
+
+      assertEquals("Teste FindById", retrievedTransaction.getDescription());
+      assertEquals(amount, retrievedTransaction.getAmount());
+      assertEquals("INCOME", retrievedTransaction.getType());
+      assertEquals(date, retrievedTransaction.getDate());
+
+   }
+
+
+    @Test
+    void shouldFindAllTransactions() {
+        List<Transaction> transactions = transactionRepository.findAll();
+
+    assertFalse(transactions.isEmpty());
+
+
+    }
+
 }
