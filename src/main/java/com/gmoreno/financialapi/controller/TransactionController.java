@@ -1,8 +1,10 @@
 package com.gmoreno.financialapi.controller;
 
+import com.gmoreno.financialapi.dto.TransactionRequest;
 import com.gmoreno.financialapi.service.TransactionService;
 import com.gmoreno.financialapi.model.Transaction;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,8 +25,17 @@ public class TransactionController {
     }
 
     @PostMapping("/api/transactions")
-    public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) {
+    public ResponseEntity<Transaction> createTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
+
+        Transaction transaction = new Transaction(
+                transactionRequest.getDescription(),
+                transactionRequest.getAmount(),
+                transactionRequest.getType(),
+                transactionRequest.getDate()
+        );
+
         Transaction savedTransaction = transactionService.save(transaction);
+
         return ResponseEntity.status(201).body(savedTransaction);
     }
 

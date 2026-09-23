@@ -1,6 +1,7 @@
 package com.gmoreno.financialapi;
 
 import com.gmoreno.financialapi.model.Transaction;
+import com.gmoreno.financialapi.model.TransactionType;
 import com.gmoreno.financialapi.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
@@ -66,13 +67,13 @@ class FinancialApiApplicationTests {
         Transaction transaction = new Transaction(
                 "Supermercado",
                 amount,
-                "EXPENSE",
+                TransactionType.DESPESA,
                 date
         );
 
         assertEquals("Supermercado", transaction.getDescription());
         assertEquals(amount, transaction.getAmount());
-        assertEquals("EXPENSE", transaction.getType());
+        assertEquals(TransactionType.DESPESA, transaction.getType());
         assertEquals(date, transaction.getDate());
     }
 
@@ -84,7 +85,7 @@ class FinancialApiApplicationTests {
         Transaction transaction = new Transaction(
                 "Teste Repository",
                 amount,
-                "EXPENSE",
+                TransactionType.DESPESA,
                 date
         );
 
@@ -102,7 +103,7 @@ class FinancialApiApplicationTests {
        Transaction transaction = new Transaction(
               "Teste FindById",
               amount,
-              "INCOME",
+              TransactionType.RECEITA,
               date
        );
 
@@ -117,7 +118,7 @@ class FinancialApiApplicationTests {
 
       assertEquals("Teste FindById", retrievedTransaction.getDescription());
       assertEquals(amount, retrievedTransaction.getAmount());
-      assertEquals("INCOME", retrievedTransaction.getType());
+      assertEquals(TransactionType.RECEITA, retrievedTransaction.getType());
       assertEquals(date, retrievedTransaction.getDate());
 
    }
@@ -135,7 +136,7 @@ class FinancialApiApplicationTests {
                 new Transaction(
                         "Teste HTTP GET",
                         new BigDecimal("150.00"),
-                        "RECEITA",
+                        TransactionType.RECEITA,
                         LocalDate.now()
                 )
         );
@@ -145,7 +146,7 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.id").value(savedTransaction.getId()))
                 .andExpect(jsonPath("$.description").value("Teste HTTP GET"))
                 .andExpect(jsonPath("$.amount").value(150.00))
-                .andExpect(jsonPath("$.type").value("RECEITA"));
+                .andExpect(jsonPath("$.type").value("RECEITA"));;
     }
 
     @Test
@@ -182,7 +183,7 @@ class FinancialApiApplicationTests {
                 new Transaction(
                         "Teste HTTP LIST",
                         new BigDecimal("300.00"),
-                        "RECEITA",
+                        TransactionType.RECEITA,
                         LocalDate.now()
                 )
         );
@@ -191,5 +192,72 @@ class FinancialApiApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[?(@.description == 'Teste HTTP LIST')]").exists());
+    }
+    @Test
+    void shouldRejectTransactionWithoutDescription() throws Exception {
+        String json = """
+        {
+            "description": "",
+            "amount": 100.00,
+            "type": "DESPESA",
+            "date": "2026-09-23"
+        }
+        """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectTransactionWithNegativeAmount() throws Exception {
+        String json = """
+        {
+            "description": "Teste valor negativo",
+            "amount": -100.00,
+            "type": "DESPESA",
+            "date": "2026-09-23"
+        }
+        """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectTransactionWithoutType() throws Exception {
+        String json = """
+        {
+            "description": "Teste sem tipo",
+            "amount": 100.00,
+            "type": "",
+            "date": "2026-09-23"
+        }
+        """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectTransactionWithoutDate() throws Exception {
+        String json = """
+        {
+            "description": "Teste sem data",
+            "amount": 100.00,
+            "type": "DESPESA",
+            "date": null
+        }
+        """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isBadRequest());
     }
 }
