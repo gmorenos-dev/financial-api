@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -25,10 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -259,5 +259,52 @@ class FinancialApiApplicationTests {
                         .contentType("application/json")
                         .content(json))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldUpdateTransactionThroughHttp() throws Exception {
+        Transaction transaction = new Transaction(
+                "Conta antiga",
+                new BigDecimal("100.00"),
+                TransactionType.DESPESA,
+                LocalDate.of(2026, 9, 20)
+        );
+
+        Transaction savedTransaction = transactionRepository.save(transaction);
+
+        String json = """
+            {
+                "description": "Conta atualizada",
+                "amount": 150.00,
+                "type": "DESPESA",
+                "date": "2026-09-25"
+            }
+            """;
+
+        mockMvc.perform(put("/api/transactions/" + savedTransaction.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("Conta atualizada"))
+                .andExpect(jsonPath("$.amount").value(150.00))
+                .andExpect(jsonPath("$.type").value("DESPESA"))
+                .andExpect(jsonPath("$.date").value("2026-09-25"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUpdatingTransactionDoesNotExist() throws Exception {
+        String json = """
+            {
+                "description": "Conta atualizada",
+                "amount": 150.00,
+                "type": "DESPESA",
+                "date": "2026-09-25"
+            }
+            """;
+
+        mockMvc.perform(put("/api/transactions/999999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound());
     }
 }

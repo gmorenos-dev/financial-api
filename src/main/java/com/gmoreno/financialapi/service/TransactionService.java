@@ -28,4 +28,16 @@ public class TransactionService {
         return transactionRepository.findById(id);
     }
 
+    public Optional<Transaction> update(Long id, Transaction transactionData) {
+        return transactionRepository.findById(id)
+                .map(transaction -> {
+                    transaction.setDescription(transactionData.getDescription());
+                    transaction.setAmount(transactionData.getAmount());
+                    transaction.setType(transactionData.getType());
+                    transaction.setDate(transactionData.getDate());
+
+                    return transactionRepository.save(transaction);
+                });
+    }
+
 }
