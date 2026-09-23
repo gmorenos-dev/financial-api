@@ -307,4 +307,28 @@ class FinancialApiApplicationTests {
                         .content(json))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void shouldDeleteTransactionThroughHttp() throws Exception {
+        Transaction transaction = new Transaction(
+                "Conta para excluir",
+                new BigDecimal("100.00"),
+                TransactionType.DESPESA,
+                LocalDate.of(2026, 9, 20)
+        );
+
+        Transaction savedTransaction = transactionRepository.save(transaction);
+
+        mockMvc.perform(delete("/api/transactions/" + savedTransaction.getId()))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/transactions/" + savedTransaction.getId()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingTransactionDoesNotExist() throws Exception {
+        mockMvc.perform(delete("/api/transactions/999999"))
+                .andExpect(status().isNotFound());
+    }
 }

@@ -74,5 +74,18 @@ public class TransactionController {
         return ResponseEntity.notFound().build();
     }
 
+    @DeleteMapping("/api/transactions/{id}")
+    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
+
+        boolean deleted = transactionService.delete(id);
+
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
+
 
 }
