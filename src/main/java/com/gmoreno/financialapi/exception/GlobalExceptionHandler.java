@@ -1,11 +1,11 @@
 package com.gmoreno.financialapi.exception;
 
+import com.gmoreno.financialapi.dto.ErrorResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.gmoreno.financialapi.dto.ValidationErrorResponse;
 import org.springframework.validation.FieldError;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,12 +14,20 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(TransactionNotFoundException.class)
-    public ResponseEntity<String> handleTransactionNotFound(TransactionNotFoundException exception) {
-        return ResponseEntity.status(404).body(exception.getMessage());
+    public ResponseEntity<ErrorResponse> handleTransactionNotFound(
+            TransactionNotFoundException exception) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                404,
+                exception.getMessage(),
+                null
+        );
+
+        return ResponseEntity.status(404).body(errorResponse);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationException(
+    public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException exception) {
 
         Map<String, String> errors = new LinkedHashMap<>();
@@ -28,8 +36,13 @@ public class GlobalExceptionHandler {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
         }
 
-        return ResponseEntity.badRequest()
-                .body(new ValidationErrorResponse(errors));
+        ErrorResponse errorResponse = new ErrorResponse(
+                400,
+                "Dados da transação inválidos",
+                errors
+        );
+
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
 }
