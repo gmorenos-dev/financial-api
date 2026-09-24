@@ -331,4 +331,28 @@ class FinancialApiApplicationTests {
         mockMvc.perform(delete("/api/transactions/999999"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void shouldReturnValidationErrorsWhenCreatingInvalidTransaction() throws Exception {
+
+        String requestBody = """
+            {
+                "description": "",
+                "amount": -100,
+                "type": null,
+                "date": null
+            }
+            """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.description").value("must not be blank"))
+                .andExpect(jsonPath("$.errors.amount").value("must be greater than 0"))
+                .andExpect(jsonPath("$.errors.type").value("must not be null"))
+                .andExpect(jsonPath("$.errors.date").value("must not be null"));
+    }
+
+
 }
