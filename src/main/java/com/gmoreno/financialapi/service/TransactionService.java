@@ -6,6 +6,7 @@ import com.gmoreno.financialapi.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import com.gmoreno.financialapi.dto.FinancialSummaryResponse;
 import com.gmoreno.financialapi.model.TransactionType;
@@ -63,6 +64,32 @@ public class TransactionService {
 
         BigDecimal totalDespesas =
                 transactionRepository.sumAmountByType(TransactionType.DESPESA);
+
+        BigDecimal saldo = totalReceitas.subtract(totalDespesas);
+
+        return new FinancialSummaryResponse(
+                totalReceitas,
+                totalDespesas,
+                saldo
+        );
+    }
+    public FinancialSummaryResponse getFinancialSummary(
+            LocalDate startDate,
+            LocalDate endDate) {
+
+        BigDecimal totalReceitas =
+                transactionRepository.sumAmountByTypeAndDateBetween(
+                        TransactionType.RECEITA,
+                        startDate,
+                        endDate
+                );
+
+        BigDecimal totalDespesas =
+                transactionRepository.sumAmountByTypeAndDateBetween(
+                        TransactionType.DESPESA,
+                        startDate,
+                        endDate
+                );
 
         BigDecimal saldo = totalReceitas.subtract(totalDespesas);
 

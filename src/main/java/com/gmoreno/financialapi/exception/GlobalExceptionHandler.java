@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -47,6 +48,25 @@ public class GlobalExceptionHandler {
                 "Dados da transação inválidos",
                 errors,
                 null
+        );
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException exception,
+            HttpServletRequest request) {
+
+        String field = exception.getName();
+
+        Map<String, String> errors = new LinkedHashMap<>();
+        errors.put(field, "deve estar no formato yyyy-MM-dd");
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                400,
+                "Parâmetro inválido",
+                errors,
+                request.getRequestURI()
         );
 
         return ResponseEntity.badRequest().body(errorResponse);

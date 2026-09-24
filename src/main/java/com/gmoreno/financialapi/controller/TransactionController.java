@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import java.util.List;
@@ -43,8 +44,22 @@ public class TransactionController {
         return transactionService.findAll();
     }
     @GetMapping("/api/transactions/summary")
-    public ResponseEntity<FinancialSummaryResponse> getFinancialSummary() {
-        FinancialSummaryResponse summary = transactionService.getFinancialSummary();
+    public ResponseEntity<FinancialSummaryResponse> getFinancialSummary(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+
+        FinancialSummaryResponse summary;
+
+        if (startDate == null && endDate == null) {
+            summary = transactionService.getFinancialSummary();
+        } else if (startDate == null || endDate == null) {
+            return ResponseEntity.badRequest().build();
+        } else if (startDate.isAfter(endDate)) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            summary = transactionService.getFinancialSummary(startDate, endDate);
+        }
+
         return ResponseEntity.ok(summary);
     }
 

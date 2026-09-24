@@ -450,6 +450,57 @@ class FinancialApiApplicationTests {
         assertEquals(new BigDecimal("650.00"), summary.getSaldo());
     }
     @Test
+    void shouldCalculateFinancialSummaryByPeriod() {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita agosto",
+                        new BigDecimal("500.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 8, 31)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita setembro",
+                        new BigDecimal("1000.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 9, 15)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa setembro",
+                        new BigDecimal("350.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 20)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa outubro",
+                        new BigDecimal("200.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 10, 1)
+                )
+        );
+
+        FinancialSummaryResponse summary =
+                transactionService.getFinancialSummary(
+                        LocalDate.of(2026, 9, 1),
+                        LocalDate.of(2026, 9, 30)
+                );
+
+        assertEquals(new BigDecimal("1000.00"), summary.getTotalReceitas());
+        assertEquals(new BigDecimal("350.00"), summary.getTotalDespesas());
+        assertEquals(new BigDecimal("650.00"), summary.getSaldo());
+    }
+    @Test
     void shouldGetFinancialSummaryThroughHttp() throws Exception {
 
         transactionRepository.deleteAll();
@@ -477,6 +528,108 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.totalReceitas").value(1000.00))
                 .andExpect(jsonPath("$.totalDespesas").value(350.00))
                 .andExpect(jsonPath("$.saldo").value(650.00));
+    }
+    @Test
+    void shouldGetFinancialSummaryByPeriodThroughHttp() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita agosto",
+                        new BigDecimal("500.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 8, 31)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita setembro",
+                        new BigDecimal("1000.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 9, 15)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa setembro",
+                        new BigDecimal("350.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 20)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa outubro",
+                        new BigDecimal("200.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 10, 1)
+                )
+        );
+
+        mockMvc.perform(
+                        get("/api/transactions/summary")
+                                .param("startDate", "2026-09-01")
+                                .param("endDate", "2026-09-30")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalReceitas").value(1000.00))
+                .andExpect(jsonPath("$.totalDespesas").value(350.00))
+                .andExpect(jsonPath("$.saldo").value(650.00));
+    }
+    @Test
+    void shouldRejectFinancialSummaryWithIncompletePeriod() throws Exception {
+
+        mockMvc.perform(
+                        get("/api/transactions/summary")
+                                .param("startDate", "2026-09-01")
+                )
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(
+                        get("/api/transactions/summary")
+                                .param("endDate", "2026-09-30")
+                )
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    void shouldRejectFinancialSummaryWhenStartDateIsAfterEndDate() throws Exception {
+
+        mockMvc.perform(
+                        get("/api/transactions/summary")
+                                .param("startDate", "2026-09-30")
+                                .param("endDate", "2026-09-01")
+                )
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    void shouldRejectFinancialSummaryWithInvalidDateFormat() throws Exception {
+
+        mockMvc.perform(
+                        get("/api/transactions/summary")
+                                .param("startDate", "24/09/2026")
+                                .param("endDate", "2026-09-30")
+                )
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    void shouldReturnStandardErrorWhenFinancialSummaryHasInvalidDateFormat() throws Exception {
+
+        mockMvc.perform(
+                        get("/api/transactions/summary")
+                                .param("startDate", "24/09/2026")
+                                .param("endDate", "2026-09-30")
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Parâmetro inválido"))
+                .andExpect(jsonPath("$.errors.startDate")
+                        .value("deve estar no formato yyyy-MM-dd"))
+                .andExpect(jsonPath("$.path")
+                        .value("/api/transactions/summary"));
     }
 
 }
