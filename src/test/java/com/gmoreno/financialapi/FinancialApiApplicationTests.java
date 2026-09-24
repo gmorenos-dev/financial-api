@@ -1,8 +1,10 @@
 package com.gmoreno.financialapi;
 
+import com.gmoreno.financialapi.dto.FinancialSummaryResponse;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.model.TransactionType;
 import com.gmoreno.financialapi.repository.TransactionRepository;
+import com.gmoreno.financialapi.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,6 +45,9 @@ class FinancialApiApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @Container
     static PostgreSQLContainer<?> postgres =
@@ -371,6 +376,107 @@ class FinancialApiApplicationTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors.amount")
                         .value("deve ter no máximo 14 dígitos inteiros e 2 casas decimais"));
+    }
+    @Test
+    void shouldSumTransactionsByType() {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita teste 1",
+                        new BigDecimal("100.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 9, 24)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita teste 2",
+                        new BigDecimal("250.50"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 9, 24)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa teste",
+                        new BigDecimal("80.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 24)
+                )
+        );
+
+        BigDecimal totalReceitas =
+                transactionRepository.sumAmountByType(TransactionType.RECEITA);
+
+        assertEquals(new BigDecimal("350.50"), totalReceitas);
+
+        BigDecimal totalDespesas =
+                transactionRepository.sumAmountByType(TransactionType.DESPESA);
+
+        assertEquals(new BigDecimal("80.00"), totalDespesas);
+    }
+    @Test
+    void shouldCalculateFinancialSummary() {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita teste",
+                        new BigDecimal("1000.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 9, 24)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa teste",
+                        new BigDecimal("350.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 24)
+                )
+        );
+
+        FinancialSummaryResponse summary =
+                transactionService.getFinancialSummary();
+
+        assertEquals(new BigDecimal("1000.00"), summary.getTotalReceitas());
+        assertEquals(new BigDecimal("350.00"), summary.getTotalDespesas());
+        assertEquals(new BigDecimal("650.00"), summary.getSaldo());
+    }
+    @Test
+    void shouldGetFinancialSummaryThroughHttp() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita teste",
+                        new BigDecimal("1000.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 9, 24)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa teste",
+                        new BigDecimal("350.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 24)
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions/summary"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalReceitas").value(1000.00))
+                .andExpect(jsonPath("$.totalDespesas").value(350.00))
+                .andExpect(jsonPath("$.saldo").value(650.00));
     }
 
 }

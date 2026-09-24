@@ -5,8 +5,10 @@ import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
+import com.gmoreno.financialapi.dto.FinancialSummaryResponse;
+import com.gmoreno.financialapi.model.TransactionType;
 
 @Service
 public class TransactionService {
@@ -52,6 +54,23 @@ public class TransactionService {
         }
 
         transactionRepository.deleteById(id);
+    }
+
+    public FinancialSummaryResponse getFinancialSummary() {
+
+        BigDecimal totalReceitas =
+                transactionRepository.sumAmountByType(TransactionType.RECEITA);
+
+        BigDecimal totalDespesas =
+                transactionRepository.sumAmountByType(TransactionType.DESPESA);
+
+        BigDecimal saldo = totalReceitas.subtract(totalDespesas);
+
+        return new FinancialSummaryResponse(
+                totalReceitas,
+                totalDespesas,
+                saldo
+        );
     }
 
 }

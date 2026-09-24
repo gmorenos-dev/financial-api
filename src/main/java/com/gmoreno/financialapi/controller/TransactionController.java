@@ -1,5 +1,6 @@
 package com.gmoreno.financialapi.controller;
 
+import com.gmoreno.financialapi.dto.FinancialSummaryResponse;
 import com.gmoreno.financialapi.dto.TransactionRequest;
 import com.gmoreno.financialapi.service.TransactionService;
 import com.gmoreno.financialapi.model.Transaction;
@@ -41,6 +42,12 @@ public class TransactionController {
 
         return transactionService.findAll();
     }
+    @GetMapping("/api/transactions/summary")
+    public ResponseEntity<FinancialSummaryResponse> getFinancialSummary() {
+        FinancialSummaryResponse summary = transactionService.getFinancialSummary();
+        return ResponseEntity.ok(summary);
+    }
+
     @GetMapping("/api/transactions/{id}")
     public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) {
         Transaction transaction = transactionService.findById(id);
