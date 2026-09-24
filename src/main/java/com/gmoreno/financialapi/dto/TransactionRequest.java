@@ -11,16 +11,16 @@ import com.gmoreno.financialapi.model.TransactionType;
 
 public class TransactionRequest {
 
-    @NotBlank
+    @NotBlank(message = "não pode estar em branco")
     private String description;
 
-    @Positive
+    @Positive(message = "deve ser maior que 0")
     private BigDecimal amount;
 
-    @NotNull
+    @NotNull(message = "não pode ser nulo")
     private TransactionType type;
 
-    @NotNull
+    @NotNull(message = "não pode ser nulo")
     private LocalDate date;
 
 

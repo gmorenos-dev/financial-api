@@ -348,10 +348,10 @@ class FinancialApiApplicationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.description").value("must not be blank"))
-                .andExpect(jsonPath("$.errors.amount").value("must be greater than 0"))
-                .andExpect(jsonPath("$.errors.type").value("must not be null"))
-                .andExpect(jsonPath("$.errors.date").value("must not be null"));
+                .andExpect(jsonPath("$.errors.description").value("não pode estar em branco"))
+                .andExpect(jsonPath("$.errors.amount").value("deve ser maior que 0"))
+                .andExpect(jsonPath("$.errors.type").value("não pode ser nulo"))
+                .andExpect(jsonPath("$.errors.date").value("não pode ser nulo"));
     }
 
 
