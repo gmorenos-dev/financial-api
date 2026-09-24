@@ -353,6 +353,24 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.errors.type").value("não pode ser nulo"))
                 .andExpect(jsonPath("$.errors.date").value("não pode ser nulo"));
     }
+    @Test
+    void shouldRejectTransactionWithMoreThanTwoDecimalPlaces() throws Exception {
 
+        String requestBody = """
+        {
+            "description": "Teste decimal",
+            "amount": 100.999,
+            "type": "DESPESA",
+            "date": "2026-09-24"
+        }
+        """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.amount")
+                        .value("deve ter no máximo 14 dígitos inteiros e 2 casas decimais"));
+    }
 
 }

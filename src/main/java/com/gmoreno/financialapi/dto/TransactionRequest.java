@@ -1,5 +1,6 @@
 package com.gmoreno.financialapi.dto;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -15,6 +16,7 @@ public class TransactionRequest {
     private String description;
 
     @Positive(message = "deve ser maior que 0")
+    @Digits(integer = 14, fraction = 2, message = "deve ter no máximo 14 dígitos inteiros e 2 casas decimais")
     private BigDecimal amount;
 
     @NotNull(message = "não pode ser nulo")
