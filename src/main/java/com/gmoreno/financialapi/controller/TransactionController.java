@@ -43,13 +43,10 @@ public class TransactionController {
     }
     @GetMapping("/api/transactions/{id}")
     public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) {
-        Optional<Transaction> transaction = transactionService.findById(id);
+        Transaction transaction = transactionService.findById(id);
 
-        if (transaction.isPresent()) {
-            return ResponseEntity.ok(transaction.get());
-        }
+        return ResponseEntity.ok(transaction);
 
-        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/api/transactions/{id}")
@@ -64,28 +61,18 @@ public class TransactionController {
                 transactionRequest.getDate()
         );
 
-        Optional<Transaction> updatedTransaction =
+        Transaction updatedTransaction =
                 transactionService.update(id, transactionData);
 
-        if (updatedTransaction.isPresent()) {
-            return ResponseEntity.ok(updatedTransaction.get());
-        }
-
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(updatedTransaction);
     }
 
     @DeleteMapping("/api/transactions/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
 
-        boolean deleted = transactionService.delete(id);
+        transactionService.delete(id);
 
-        if (deleted) {
-            return ResponseEntity.noContent().build();
-        }
-
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.noContent().build();
     }
-
-
 
 }

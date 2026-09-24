@@ -1,5 +1,6 @@
 package com.gmoreno.financialapi.service;
 
+import com.gmoreno.financialapi.exception.TransactionNotFoundException;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
@@ -24,29 +25,33 @@ public class TransactionService {
         return transactionRepository.findAll();
     }
 
-    public Optional<Transaction> findById(Long id) {
-        return transactionRepository.findById(id);
-    }
-
-    public Optional<Transaction> update(Long id, Transaction transactionData) {
+    public Transaction findById(Long id) {
         return transactionRepository.findById(id)
-                .map(transaction -> {
-                    transaction.setDescription(transactionData.getDescription());
-                    transaction.setAmount(transactionData.getAmount());
-                    transaction.setType(transactionData.getType());
-                    transaction.setDate(transactionData.getDate());
-
-                    return transactionRepository.save(transaction);
-                });
+                .orElseThrow(() ->
+                        new TransactionNotFoundException("Transação não encontrada: " + id));
     }
 
-    public boolean delete(Long id) {
+    public Transaction update(Long id, Transaction transactionData) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() ->
+                        new TransactionNotFoundException("Transação não encontrada: " + id));
+
+        transaction.setDescription(transactionData.getDescription());
+        transaction.setAmount(transactionData.getAmount());
+        transaction.setType(transactionData.getType());
+        transaction.setDate(transactionData.getDate());
+
+        return transactionRepository.save(transaction);
+    }
+
+    public void delete(Long id) {
         if (!transactionRepository.existsById(id)) {
-            return false;
+            throw new TransactionNotFoundException(
+                    "Transação não encontrada: " + id
+            );
         }
 
         transactionRepository.deleteById(id);
-        return true;
     }
 
 }
