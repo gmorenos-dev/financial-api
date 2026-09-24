@@ -7,11 +7,18 @@ public class ErrorResponse {
     private int status;
     private String message;
     private Map<String, String> errors;
+    private String path;
 
-    public ErrorResponse(int status, String message, Map<String, String> errors) {
+    public ErrorResponse(
+            int status,
+            String message,
+            Map<String, String> errors,
+            String path) {
+
         this.status = status;
         this.message = message;
         this.errors = errors;
+        this.path = path;
     }
 
     public int getStatus() {
@@ -24,5 +31,8 @@ public class ErrorResponse {
 
     public Map<String, String> getErrors() {
         return errors;
+    }
+    public String getPath() {
+        return path;
     }
 }

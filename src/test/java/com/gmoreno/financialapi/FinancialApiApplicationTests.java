@@ -152,9 +152,9 @@ class FinancialApiApplicationTests {
     @Test
     void shouldReturnNotFoundWhenTransactionDoesNotExist() throws Exception {
         mockMvc.perform(get("/api/transactions/{id}", 999999L))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.path").value("/api/transactions/999999"));
     }
-
     @Test
     void shouldCreateTransactionThroughHttp() throws Exception {
         String json = """
