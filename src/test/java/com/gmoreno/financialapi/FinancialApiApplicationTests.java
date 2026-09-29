@@ -1,6 +1,7 @@
 package com.gmoreno.financialapi;
 
 import com.gmoreno.financialapi.dto.FinancialSummaryResponse;
+import com.gmoreno.financialapi.exception.InvalidDateRangeException;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.model.TransactionType;
 import com.gmoreno.financialapi.repository.TransactionRepository;
@@ -22,12 +23,7 @@ import java.util.List;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -500,6 +496,19 @@ class FinancialApiApplicationTests {
         assertEquals(new BigDecimal("350.00"), summary.getTotalDespesas());
         assertEquals(new BigDecimal("650.00"), summary.getSaldo());
     }
+
+    @Test
+    void shouldRejectFinancialSummaryWhenStartDateIsAfterEndDateInService() {
+
+        assertThrows(
+                InvalidDateRangeException.class,
+                () -> transactionService.getFinancialSummary(
+                        LocalDate.of(2026, 9, 30),
+                        LocalDate.of(2026, 9, 1)
+                )
+        );
+    }
+
     @Test
     void shouldGetFinancialSummaryThroughHttp() throws Exception {
 
@@ -595,6 +604,7 @@ class FinancialApiApplicationTests {
                 )
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldRejectFinancialSummaryWhenStartDateIsAfterEndDate() throws Exception {
 
@@ -603,8 +613,16 @@ class FinancialApiApplicationTests {
                                 .param("startDate", "2026-09-30")
                                 .param("endDate", "2026-09-01")
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message")
+                        .value("A data inicial não pode ser posterior à data final"))
+                .andExpect(jsonPath("$.errors.startDate")
+                        .value("não pode ser posterior à data final"))
+                .andExpect(jsonPath("$.path")
+                        .value("/api/transactions/summary"));
     }
+
     @Test
     void shouldRejectFinancialSummaryWithInvalidDateFormat() throws Exception {
 

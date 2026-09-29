@@ -1,5 +1,6 @@
 package com.gmoreno.financialapi.service;
 
+import com.gmoreno.financialapi.exception.InvalidDateRangeException;
 import com.gmoreno.financialapi.exception.TransactionNotFoundException;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.repository.TransactionRepository;
@@ -73,9 +74,16 @@ public class TransactionService {
                 saldo
         );
     }
+
     public FinancialSummaryResponse getFinancialSummary(
             LocalDate startDate,
             LocalDate endDate) {
+
+        if (startDate.isAfter(endDate)) {
+            throw new InvalidDateRangeException(
+                    "A data inicial não pode ser posterior à data final"
+            );
+        }
 
         BigDecimal totalReceitas =
                 transactionRepository.sumAmountByTypeAndDateBetween(

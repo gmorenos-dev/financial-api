@@ -72,5 +72,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
+    @ExceptionHandler(InvalidDateRangeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidDateRange(
+            InvalidDateRangeException exception,
+            HttpServletRequest request) {
+
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        errors.put("startDate", "não pode ser posterior à data final");
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                400,
+                exception.getMessage(),
+                errors,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
 }
 

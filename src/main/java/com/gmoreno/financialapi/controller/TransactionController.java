@@ -54,8 +54,6 @@ public class TransactionController {
             summary = transactionService.getFinancialSummary();
         } else if (startDate == null || endDate == null) {
             return ResponseEntity.badRequest().build();
-        } else if (startDate.isAfter(endDate)) {
-            return ResponseEntity.badRequest().build();
         } else {
             summary = transactionService.getFinancialSummary(startDate, endDate);
         }
