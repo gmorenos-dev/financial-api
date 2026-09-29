@@ -596,13 +596,27 @@ class FinancialApiApplicationTests {
                         get("/api/transactions/summary")
                                 .param("startDate", "2026-09-01")
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message")
+                        .value("Período incompleto"))
+                .andExpect(jsonPath("$.errors.period")
+                        .value("startDate e endDate devem ser informados juntos"))
+                .andExpect(jsonPath("$.path")
+                        .value("/api/transactions/summary"));
 
         mockMvc.perform(
                         get("/api/transactions/summary")
                                 .param("endDate", "2026-09-30")
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message")
+                        .value("Período incompleto"))
+                .andExpect(jsonPath("$.errors.period")
+                        .value("startDate e endDate devem ser informados juntos"))
+                .andExpect(jsonPath("$.path")
+                        .value("/api/transactions/summary"));
     }
 
     @Test

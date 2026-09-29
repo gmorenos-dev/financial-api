@@ -4,13 +4,16 @@ import com.gmoreno.financialapi.dto.FinancialSummaryResponse;
 import com.gmoreno.financialapi.dto.TransactionRequest;
 import com.gmoreno.financialapi.service.TransactionService;
 import com.gmoreno.financialapi.model.Transaction;
+import com.gmoreno.financialapi.dto.ErrorResponse;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Map;
 
 import java.util.List;
 
@@ -44,17 +47,31 @@ public class TransactionController {
         return transactionService.findAll();
     }
     @GetMapping("/api/transactions/summary")
-    public ResponseEntity<FinancialSummaryResponse> getFinancialSummary(
+    public ResponseEntity<?> getFinancialSummary(
             @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate) {
+            @RequestParam(required = false) LocalDate endDate,
+            HttpServletRequest request) {
 
         FinancialSummaryResponse summary;
 
         if (startDate == null && endDate == null) {
             summary = transactionService.getFinancialSummary();
         } else if (startDate == null || endDate == null) {
-            return ResponseEntity.badRequest().build();
-        } else {
+
+            ErrorResponse errorResponse = new ErrorResponse(
+                    400,
+                    "Período incompleto",
+                    Map.of(
+                            "period",
+                            "startDate e endDate devem ser informados juntos"
+                    ),
+                    request.getRequestURI()
+            );
+
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+            else {
             summary = transactionService.getFinancialSummary(startDate, endDate);
         }
 
