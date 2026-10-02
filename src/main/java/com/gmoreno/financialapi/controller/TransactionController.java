@@ -2,6 +2,7 @@ package com.gmoreno.financialapi.controller;
 
 import com.gmoreno.financialapi.dto.FinancialSummaryResponse;
 import com.gmoreno.financialapi.dto.TransactionRequest;
+import com.gmoreno.financialapi.dto.TransactionResponse;
 import com.gmoreno.financialapi.service.TransactionService;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.dto.ErrorResponse;
@@ -27,7 +28,8 @@ public class TransactionController {
     }
 
     @PostMapping("/api/transactions")
-    public ResponseEntity<Transaction> createTransaction(@Valid @RequestBody TransactionRequest transactionRequest) {
+    public ResponseEntity<TransactionResponse> createTransaction(
+            @Valid @RequestBody TransactionRequest transactionRequest) {
 
         Transaction transaction = new Transaction(
                 transactionRequest.getDescription(),
@@ -38,14 +40,21 @@ public class TransactionController {
 
         Transaction savedTransaction = transactionService.save(transaction);
 
-        return ResponseEntity.status(201).body(savedTransaction);
+        TransactionResponse response =
+                TransactionResponse.from(savedTransaction);
+
+        return ResponseEntity.status(201).body(response);
     }
 
     @GetMapping("/api/transactions")
-    public List<Transaction> getAllTransactions() {
+    public List<TransactionResponse> getAllTransactions() {
 
-        return transactionService.findAll();
+        return transactionService.findAll()
+                .stream()
+                .map(TransactionResponse::from)
+                .toList();
     }
+
     @GetMapping("/api/transactions/summary")
     public ResponseEntity<?> getFinancialSummary(
             @RequestParam(required = false) LocalDate startDate,
@@ -79,15 +88,19 @@ public class TransactionController {
     }
 
     @GetMapping("/api/transactions/{id}")
-    public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) {
+    public ResponseEntity<TransactionResponse> getTransactionById(
+            @PathVariable Long id) {
+
         Transaction transaction = transactionService.findById(id);
 
-        return ResponseEntity.ok(transaction);
+        TransactionResponse response =
+                TransactionResponse.from(transaction);
 
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/api/transactions/{id}")
-    public ResponseEntity<Transaction> updateTransaction(
+    public ResponseEntity<TransactionResponse> updateTransaction(
             @PathVariable Long id,
             @Valid @RequestBody TransactionRequest transactionRequest) {
 
@@ -101,7 +114,10 @@ public class TransactionController {
         Transaction updatedTransaction =
                 transactionService.update(id, transactionData);
 
-        return ResponseEntity.ok(updatedTransaction);
+        TransactionResponse response =
+                TransactionResponse.from(updatedTransaction);
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/api/transactions/{id}")

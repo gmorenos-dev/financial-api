@@ -1,6 +1,7 @@
 package com.gmoreno.financialapi;
 
 import com.gmoreno.financialapi.dto.FinancialSummaryResponse;
+import com.gmoreno.financialapi.dto.TransactionResponse;
 import com.gmoreno.financialapi.exception.InvalidDateRangeException;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.model.TransactionType;
@@ -662,6 +663,27 @@ class FinancialApiApplicationTests {
                         .value("deve estar no formato yyyy-MM-dd"))
                 .andExpect(jsonPath("$.path")
                         .value("/api/transactions/summary"));
+    }
+    @Test
+    void shouldMapTransactionToTransactionResponse() {
+
+        Transaction transaction = new Transaction(
+                "Salário",
+                new BigDecimal("5000.00"),
+                TransactionType.RECEITA,
+                LocalDate.of(2026, 10, 2)
+        );
+
+        transaction.setId(100L);
+
+        TransactionResponse response =
+                TransactionResponse.from(transaction);
+
+        assertEquals(100L, response.getId());
+        assertEquals("Salário", response.getDescription());
+        assertEquals(new BigDecimal("5000.00"), response.getAmount());
+        assertEquals(TransactionType.RECEITA, response.getType());
+        assertEquals(LocalDate.of(2026, 10, 2), response.getDate());
     }
 
 }
