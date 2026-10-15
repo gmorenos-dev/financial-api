@@ -700,7 +700,8 @@ class FinancialApiApplicationTests {
         mockMvc.perform(post("/api/transactions")
                         .contentType("application/json")
                         .content(json))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.path").value("/api/transactions"));
     }
 
 }

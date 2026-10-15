@@ -33,9 +33,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(404).body(errorResponse);
     }
 
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
-            MethodArgumentNotValidException exception) {
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request) {
 
         Map<String, String> errors = new LinkedHashMap<>();
 
@@ -47,11 +49,12 @@ public class GlobalExceptionHandler {
                 400,
                 "Dados da transação inválidos",
                 errors,
-                null
+                request.getRequestURI()
         );
 
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(
             MethodArgumentTypeMismatchException exception,
