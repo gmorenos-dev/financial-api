@@ -5,6 +5,8 @@ import com.gmoreno.financialapi.exception.TransactionNotFoundException;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,8 +27,8 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    public List<Transaction> findAll() {
-        return transactionRepository.findAll();
+    public Page<Transaction> findAll(Pageable pageable) {
+        return transactionRepository.findAll(pageable);
     }
 
     public Transaction findById(Long id) {

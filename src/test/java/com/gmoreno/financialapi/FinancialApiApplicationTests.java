@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -181,6 +182,9 @@ class FinancialApiApplicationTests {
 
     @Test
     void shouldGetAllTransactionsThroughHttp() throws Exception {
+
+        transactionRepository.deleteAll();
+
         transactionRepository.save(
                 new Transaction(
                         "Teste HTTP LIST",
@@ -192,9 +196,76 @@ class FinancialApiApplicationTests {
 
         mockMvc.perform(get("/api/transactions"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[?(@.description == 'Teste HTTP LIST')]").exists());
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[?(@.description == 'Teste HTTP LIST')]").exists())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
     }
+    @Test
+    void shouldGetTransactionsWithPaginationParameters() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?page=0&size=5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(5));
+
+    }
+
+    @Test
+    void shouldGetSecondPageOfTransactions() throws Exception {
+        mockMvc.perform(get("/api/transactions?page=1&size=5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(5));
+    }
+
+    @Test
+    void shouldSeparateTransactionsIntoPages() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        for (int i = 1; i <= 6; i++) {
+            transactionRepository.save(
+                    new Transaction(
+                            "Transação paginação " + i,
+                            new BigDecimal("10.00"),
+                            TransactionType.RECEITA,
+                            LocalDate.now()
+                    )
+            );
+
+        }
+        MvcResult firstPage = mockMvc.perform(
+                        get("/api/transactions?page=0&size=3&sort=id,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(3))
+                .andExpect(jsonPath("$.size").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andReturn();
+
+        MvcResult secondPage = mockMvc.perform(
+                        get("/api/transactions?page=1&size=3&sort=id,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(3))
+                .andExpect(jsonPath("$.size").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andReturn();
+
+        String firstPageBody = firstPage.getResponse().getContentAsString();
+        String secondPageBody = secondPage.getResponse().getContentAsString();
+
+        assertTrue(firstPageBody.contains("Transação paginação 1"));
+        assertTrue(firstPageBody.contains("Transação paginação 2"));
+        assertTrue(firstPageBody.contains("Transação paginação 3"));
+
+        assertTrue(secondPageBody.contains("Transação paginação 4"));
+        assertTrue(secondPageBody.contains("Transação paginação 5"));
+        assertTrue(secondPageBody.contains("Transação paginação 6"));
+
+    }
+
     @Test
     void shouldRejectTransactionWithoutDescription() throws Exception {
         String json = """

@@ -6,11 +6,14 @@ import com.gmoreno.financialapi.dto.TransactionResponse;
 import com.gmoreno.financialapi.service.TransactionService;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.dto.ErrorResponse;
+import com.gmoreno.financialapi.dto.TransactionPageResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -47,12 +50,18 @@ public class TransactionController {
     }
 
     @GetMapping("/api/transactions")
-    public List<TransactionResponse> getAllTransactions() {
+    public TransactionPageResponse getAllTransactions(Pageable pageable) {
+        Page<TransactionResponse> transactionPage =
+                transactionService.findAll(pageable)
+                        .map(TransactionResponse::from);
 
-        return transactionService.findAll()
-                .stream()
-                .map(TransactionResponse::from)
-                .toList();
+        return new TransactionPageResponse(
+                transactionPage.getContent(),
+                transactionPage.getNumber(),
+                transactionPage.getSize(),
+                transactionPage.getTotalElements(),
+                transactionPage.getTotalPages()
+        );
     }
 
     @GetMapping("/api/transactions/summary")
