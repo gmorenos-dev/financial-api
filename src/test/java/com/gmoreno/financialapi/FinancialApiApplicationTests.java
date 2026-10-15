@@ -686,4 +686,21 @@ class FinancialApiApplicationTests {
         assertEquals(LocalDate.of(2026, 10, 2), response.getDate());
     }
 
+
+    @Test
+    void shouldRejectTransactionWithoutAmount() throws Exception {
+        String json = """
+    {
+        "description": "Teste sem valor",
+        "type": "DESPESA",
+        "date": "2026-09-22"
+    }
+    """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
 }

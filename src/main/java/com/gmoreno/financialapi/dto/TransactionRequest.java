@@ -15,6 +15,7 @@ public class TransactionRequest {
     @NotBlank(message = "não pode estar em branco")
     private String description;
 
+    @NotNull(message = "é obrigatório")
     @Positive(message = "deve ser maior que 0")
     @Digits(integer = 14, fraction = 2, message = "deve ter no máximo 14 dígitos inteiros e 2 casas decimais")
     private BigDecimal amount;
