@@ -110,7 +110,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         Map<String, String> errors = new LinkedHashMap<>();
-        errors.put("minAmount", "não pode ser maior que maxAmount");
+        errors.put(exception.getField(), exception.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse(
                 400,

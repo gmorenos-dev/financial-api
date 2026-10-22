@@ -1153,7 +1153,24 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.message")
                         .value("O valor mínimo não pode ser maior que o valor máximo"))
                 .andExpect(jsonPath("$.errors.minAmount")
-                        .value("não pode ser maior que maxAmount"))
+                        .value("O valor mínimo não pode ser maior que o valor máximo"))
+                .andExpect(jsonPath("$.path").value("/api/transactions"));
+
+    }
+
+    @Test
+    void shouldRejectNegativeAmountFilter() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?minAmount=-10"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.minAmount")
+                        .value("O valor mínimo não pode ser negativo"))
+                .andExpect(jsonPath("$.path").value("/api/transactions"));
+
+        mockMvc.perform(get("/api/transactions?maxAmount=-10"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.maxAmount")
+                        .value("O valor máximo não pode ser negativo"))
                 .andExpect(jsonPath("$.path").value("/api/transactions"));
 
     }
