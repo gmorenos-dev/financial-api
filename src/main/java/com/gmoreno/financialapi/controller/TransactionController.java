@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -50,7 +51,8 @@ public class TransactionController {
     }
 
     @GetMapping("/api/transactions")
-    public TransactionPageResponse getAllTransactions(Pageable pageable) {
+    public TransactionPageResponse getAllTransactions(
+            @PageableDefault(sort = "id") Pageable pageable) {
         Page<TransactionResponse> transactionPage =
                 transactionService.findAll(pageable)
                         .map(TransactionResponse::from);

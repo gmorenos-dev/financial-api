@@ -775,4 +775,51 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.path").value("/api/transactions"));
     }
 
+    @Test
+    void shouldSortTransactionsByIdAscendingByDefault() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        Transaction first = transactionRepository.save(
+                new Transaction(
+                        "Ordenação A",
+                        new BigDecimal("10.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.now()
+                )
+        );
+
+        Transaction second = transactionRepository.save(
+                new Transaction(
+                        "Ordenação B",
+                        new BigDecimal("20.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.now()
+                )
+        );
+
+        Transaction third = transactionRepository.save(
+                new Transaction(
+                        "Ordenação C",
+                        new BigDecimal("30.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.now()
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(3))
+                .andExpect(jsonPath("$.content[0].id").value(first.getId()))
+                .andExpect(jsonPath("$.content[1].id").value(second.getId()))
+                .andExpect(jsonPath("$.content[2].id").value(third.getId()));
+
+        mockMvc.perform(get("/api/transactions?sort=description,desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(3))
+                .andExpect(jsonPath("$.content[0].id").value(third.getId()))
+                .andExpect(jsonPath("$.content[1].id").value(second.getId()))
+                .andExpect(jsonPath("$.content[2].id").value(first.getId()));
+
+    }
 }
