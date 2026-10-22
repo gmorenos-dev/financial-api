@@ -912,4 +912,116 @@ class FinancialApiApplicationTests {
 
 
     }
+
+    @Test
+    void shouldFilterTransactionsByDateRange() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Transação anterior",
+                        new BigDecimal("40.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 30)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Transação dentro do período",
+                        new BigDecimal("100.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 10, 15)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Transação posterior",
+                        new BigDecimal("60.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 11, 1)
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions"
+                        + "?startDate=2026-10-01"
+                        + "&endDate=2026-10-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Transação dentro do período"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
+
+
+    }
+
+    @Test
+    void shouldFilterTransactionsByTypeAndDateRange() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita em outubro",
+                        new BigDecimal("200.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 10, 10)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa em outubro",
+                        new BigDecimal("80.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 10, 15)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa em setembro",
+                        new BigDecimal("40.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 30)
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions"
+                        + "?type=DESPESA"
+                        + "&startDate=2026-10-01"
+                        + "&endDate=2026-10-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Despesa em outubro"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
+
+    }
+
+    @Test
+    void shouldRejectIncompleteTransactionDateRange() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?startDate=2026-10-01"))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/api/transactions?endDate=2026-10-31"))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void shouldRejectTransactionDateRangeWithStartAfterEnd() throws Exception {
+
+        mockMvc.perform(get("/api/transactions"
+                        + "?startDate=2026-10-31"
+                        + "&endDate=2026-10-01"))
+                .andExpect(status().isBadRequest());
+
+    }
+
 }

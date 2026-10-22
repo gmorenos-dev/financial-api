@@ -54,9 +54,12 @@ public class TransactionController {
     @GetMapping("/api/transactions")
     public TransactionPageResponse getAllTransactions(
             @RequestParam(required = false) TransactionType type,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
             @PageableDefault(sort = "id") Pageable pageable) {
+
         Page<TransactionResponse> transactionPage =
-              transactionService.findAll(type, pageable)
+                transactionService.findAll(type, startDate, endDate, pageable)
                         .map(TransactionResponse::from);
 
         return new TransactionPageResponse(

@@ -29,13 +29,39 @@ public class TransactionService {
 
     public Page<Transaction> findAll(
             TransactionType type,
+            LocalDate startDate,
+            LocalDate endDate,
             Pageable pageable
     ) {
-        if (type == null) {
-            return transactionRepository.findAll(pageable);
+        if ((startDate == null) != (endDate == null)) {
+            throw new InvalidDateRangeException(
+                    "Informe startDate e endDate para filtrar por período"
+            );
         }
 
-        return transactionRepository.findByType(type, pageable);
+        if (startDate != null && startDate.isAfter(endDate)) {
+            throw new InvalidDateRangeException(
+                    "A data inicial não pode ser posterior à data final"
+            );
+        }
+
+        if (startDate != null && type != null) {
+            return transactionRepository.findByTypeAndDateBetween(
+                    type, startDate, endDate, pageable
+            );
+        }
+
+        if (startDate != null) {
+            return transactionRepository.findByDateBetween(
+                    startDate, endDate, pageable
+            );
+        }
+
+        if (type != null) {
+            return transactionRepository.findByType(type, pageable);
+        }
+
+        return transactionRepository.findAll(pageable);
     }
 
     public Transaction findById(Long id) {

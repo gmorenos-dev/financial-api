@@ -14,6 +14,19 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     Page<Transaction> findByType(TransactionType type, Pageable pageable);
 
+    Page<Transaction> findByDateBetween(
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    );
+
+    Page<Transaction> findByTypeAndDateBetween(
+            TransactionType type,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable
+    );
+
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.type = :type")
     BigDecimal sumAmountByType(TransactionType type);
     @Query("""
