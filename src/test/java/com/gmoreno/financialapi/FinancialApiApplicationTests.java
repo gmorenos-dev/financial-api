@@ -1175,4 +1175,101 @@ class FinancialApiApplicationTests {
 
     }
 
+    @Test
+    void shouldApplyAllTransactionFiltersTogether() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita em outubro",
+                        new BigDecimal("100.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.of(2026, 10, 10)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa abaixo do mínimo",
+                        new BigDecimal("25.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 10, 12)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa outubro A",
+                        new BigDecimal("80.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 10, 15)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa acima do máximo",
+                        new BigDecimal("250.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 10, 18)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa fora do período",
+                        new BigDecimal("100.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 30)
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa outubro B",
+                        new BigDecimal("150.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 10, 20)
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions"
+                        + "?type=DESPESA"
+                        + "&startDate=2026-10-01"
+                        + "&endDate=2026-10-31"
+                        + "&minAmount=50"
+                        + "&maxAmount=200"
+                        + "&page=0"
+                        + "&size=1"
+                        + "&sort=id,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Despesa outubro A"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(2));
+
+        mockMvc.perform(get("/api/transactions"
+                        + "?type=DESPESA"
+                        + "&startDate=2026-10-01"
+                        + "&endDate=2026-10-31"
+                        + "&minAmount=50"
+                        + "&maxAmount=200"
+                        + "&page=1"
+                        + "&size=1"
+                        + "&sort=id,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Despesa outubro B"))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.totalPages").value(2));
+
+    }
+
 }
