@@ -20,6 +20,7 @@ import com.gmoreno.financialapi.model.TransactionType;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Map;
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -56,10 +57,19 @@ public class TransactionController {
             @RequestParam(required = false) TransactionType type,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) BigDecimal minAmount,
+            @RequestParam(required = false) BigDecimal maxAmount,
             @PageableDefault(sort = "id") Pageable pageable) {
 
         Page<TransactionResponse> transactionPage =
-                transactionService.findAll(type, startDate, endDate, pageable)
+                transactionService.findAll(
+                                type,
+                                startDate,
+                                endDate,
+                                minAmount,
+                                maxAmount,
+                                pageable
+                        )
                         .map(TransactionResponse::from);
 
         return new TransactionPageResponse(

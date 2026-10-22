@@ -2,12 +2,16 @@ package com.gmoreno.financialapi.service;
 
 import com.gmoreno.financialapi.exception.InvalidDateRangeException;
 import com.gmoreno.financialapi.exception.TransactionNotFoundException;
+import com.gmoreno.financialapi.exception.InvalidAmountRangeException;
 import com.gmoreno.financialapi.model.Transaction;
 import com.gmoreno.financialapi.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.util.ArrayList;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,8 +35,18 @@ public class TransactionService {
             TransactionType type,
             LocalDate startDate,
             LocalDate endDate,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
             Pageable pageable
     ) {
+        if (minAmount != null
+                && maxAmount != null
+                && minAmount.compareTo(maxAmount) > 0) {
+            throw new InvalidAmountRangeException(
+                    "O valor mínimo não pode ser maior que o valor máximo"
+            );
+        }
+
         if ((startDate == null) != (endDate == null)) {
             throw new InvalidDateRangeException(
                     "Informe startDate e endDate para filtrar por período"
@@ -45,23 +59,58 @@ public class TransactionService {
             );
         }
 
-        if (startDate != null && type != null) {
-            return transactionRepository.findByTypeAndDateBetween(
-                    type, startDate, endDate, pageable
-            );
-        }
+        Specification<Transaction> specification =
+                (root, query, criteriaBuilder) -> {
+                    List<Predicate> predicates = new ArrayList<>();
 
-        if (startDate != null) {
-            return transactionRepository.findByDateBetween(
-                    startDate, endDate, pageable
-            );
-        }
+                    if (type != null) {
+                        predicates.add(
+                                criteriaBuilder.equal(root.get("type"), type)
+                        );
+                    }
 
-        if (type != null) {
-            return transactionRepository.findByType(type, pageable);
-        }
+                    if (startDate != null) {
+                        predicates.add(
+                                criteriaBuilder.greaterThanOrEqualTo(
+                                        root.<LocalDate>get("date"),
+                                        startDate
+                                )
+                        );
+                    }
 
-        return transactionRepository.findAll(pageable);
+                    if (endDate != null) {
+                        predicates.add(
+                                criteriaBuilder.lessThanOrEqualTo(
+                                        root.<LocalDate>get("date"),
+                                        endDate
+                                )
+                        );
+                    }
+
+                    if (minAmount != null) {
+                        predicates.add(
+                                criteriaBuilder.greaterThanOrEqualTo(
+                                        root.<BigDecimal>get("amount"),
+                                        minAmount
+                                )
+                        );
+                    }
+
+                    if (maxAmount != null) {
+                        predicates.add(
+                                criteriaBuilder.lessThanOrEqualTo(
+                                        root.<BigDecimal>get("amount"),
+                                        maxAmount
+                                )
+                        );
+                    }
+
+                    return criteriaBuilder.and(
+                            predicates.toArray(new Predicate[0])
+                    );
+                };
+
+        return transactionRepository.findAll(specification, pageable);
     }
 
     public Transaction findById(Long id) {

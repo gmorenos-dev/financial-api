@@ -1094,4 +1094,68 @@ class FinancialApiApplicationTests {
 
     }
 
+    @Test
+    void shouldFilterTransactionsByAmountRange() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Transação valor baixo",
+                        new BigDecimal("25.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.now()
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Transação valor médio",
+                        new BigDecimal("100.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.now()
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Transação valor alto",
+                        new BigDecimal("250.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.now()
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions?minAmount=50&maxAmount=200"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Transação valor médio"))
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        mockMvc.perform(get("/api/transactions?minAmount=100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.totalElements").value(2));
+
+        mockMvc.perform(get("/api/transactions?maxAmount=100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.totalElements").value(2));
+
+    }
+
+    @Test
+    void shouldRejectAmountRangeWithMinGreaterThanMax() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?minAmount=200&maxAmount=50"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message")
+                        .value("O valor mínimo não pode ser maior que o valor máximo"))
+                .andExpect(jsonPath("$.errors.minAmount")
+                        .value("não pode ser maior que maxAmount"))
+                .andExpect(jsonPath("$.path").value("/api/transactions"));
+
+    }
+
 }

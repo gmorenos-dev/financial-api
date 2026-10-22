@@ -1,6 +1,7 @@
 package com.gmoreno.financialapi.exception;
 
 import com.gmoreno.financialapi.dto.ErrorResponse;
+import com.gmoreno.financialapi.exception.InvalidAmountRangeException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -92,6 +93,24 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = new LinkedHashMap<>();
 
         errors.put("startDate", "não pode ser posterior à data final");
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                400,
+                exception.getMessage(),
+                errors,
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(InvalidAmountRangeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidAmountRange(
+            InvalidAmountRangeException exception,
+            HttpServletRequest request) {
+
+        Map<String, String> errors = new LinkedHashMap<>();
+        errors.put("minAmount", "não pode ser maior que maxAmount");
 
         ErrorResponse errorResponse = new ErrorResponse(
                 400,
