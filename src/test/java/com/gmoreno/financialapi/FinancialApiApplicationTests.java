@@ -1272,4 +1272,19 @@ class FinancialApiApplicationTests {
 
     }
 
+    @Test
+    void shouldRejectInvalidAmountFilterFormat() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?minAmount=abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.minAmount")
+                        .value("deve ser um valor monetário válido"));
+
+        mockMvc.perform(get("/api/transactions?maxAmount=abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.maxAmount")
+                        .value("deve ser um valor monetário válido"));
+
+    }
+
 }

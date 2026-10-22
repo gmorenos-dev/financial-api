@@ -68,6 +68,8 @@ public class GlobalExceptionHandler {
             message = "deve ser RECEITA ou DESPESA";
         } else if ("startDate".equals(field) || "endDate".equals(field)) {
             message = "deve estar no formato yyyy-MM-dd";
+        } else if ("minAmount".equals(field) || "maxAmount".equals(field)) {
+            message = "deve ser um valor monetário válido";
         } else {
             message = "possui valor inválido";
         }
