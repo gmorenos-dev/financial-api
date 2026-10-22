@@ -61,9 +61,18 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         String field = exception.getName();
+        String message;
+
+        if ("type".equals(field)) {
+            message = "deve ser RECEITA ou DESPESA";
+        } else if ("startDate".equals(field) || "endDate".equals(field)) {
+            message = "deve estar no formato yyyy-MM-dd";
+        } else {
+            message = "possui valor inválido";
+        }
 
         Map<String, String> errors = new LinkedHashMap<>();
-        errors.put(field, "deve estar no formato yyyy-MM-dd");
+        errors.put(field, message);
 
         ErrorResponse errorResponse = new ErrorResponse(
                 400,

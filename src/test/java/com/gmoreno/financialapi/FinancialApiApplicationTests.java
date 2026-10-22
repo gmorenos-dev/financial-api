@@ -1024,4 +1024,24 @@ class FinancialApiApplicationTests {
 
     }
 
+    @Test
+    void shouldRejectInvalidTransactionType() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?type=INVESTIMENTO"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.type")
+                        .value("deve ser RECEITA ou DESPESA"));
+
+    }
+
+    @Test
+    void shouldRejectInvalidTransactionDateFormat() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?startDate=22-10-2026"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.startDate")
+                        .value("deve estar no formato yyyy-MM-dd"));
+
+    }
+
 }
