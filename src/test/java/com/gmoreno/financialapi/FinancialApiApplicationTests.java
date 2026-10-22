@@ -822,4 +822,94 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.content[2].id").value(first.getId()));
 
     }
+
+    @Test
+    void shouldFilterTransactionsByType() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Receita para filtro",
+                        new BigDecimal("100.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.now()
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa para filtro",
+                        new BigDecimal("50.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.now()
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions?type=RECEITA"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Receita para filtro"))
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        mockMvc.perform(get("/api/transactions?type=DESPESA"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Despesa para filtro"))
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        mockMvc.perform(get("/api/transactions"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.totalElements").value(2));
+
+    }
+
+    @Test
+    void shouldPaginateFilteredTransactions() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        for (int i = 1; i <= 3; i++) {
+            transactionRepository.save(
+                    new Transaction(
+                            "Receita paginação " + i,
+                            new BigDecimal("10.00"),
+                            TransactionType.RECEITA,
+                            LocalDate.now()
+                    )
+            );
+        }
+
+        transactionRepository.save(
+                new Transaction(
+                        "Despesa paginação",
+                        new BigDecimal("50.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.now()
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions?type=RECEITA&page=0&size=2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2));
+
+        mockMvc.perform(get("/api/transactions?type=RECEITA&page=1&size=2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].description")
+                        .value("Receita paginação 3"))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2));
+
+
+    }
 }

@@ -27,8 +27,15 @@ public class TransactionService {
         return transactionRepository.save(transaction);
     }
 
-    public Page<Transaction> findAll(Pageable pageable) {
-        return transactionRepository.findAll(pageable);
+    public Page<Transaction> findAll(
+            TransactionType type,
+            Pageable pageable
+    ) {
+        if (type == null) {
+            return transactionRepository.findAll(pageable);
+        }
+
+        return transactionRepository.findByType(type, pageable);
     }
 
     public Transaction findById(Long id) {

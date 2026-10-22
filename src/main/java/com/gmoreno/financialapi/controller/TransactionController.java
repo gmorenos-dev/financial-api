@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import com.gmoreno.financialapi.model.TransactionType;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -52,9 +53,10 @@ public class TransactionController {
 
     @GetMapping("/api/transactions")
     public TransactionPageResponse getAllTransactions(
+            @RequestParam(required = false) TransactionType type,
             @PageableDefault(sort = "id") Pageable pageable) {
         Page<TransactionResponse> transactionPage =
-                transactionService.findAll(pageable)
+              transactionService.findAll(type, pageable)
                         .map(TransactionResponse::from);
 
         return new TransactionPageResponse(
