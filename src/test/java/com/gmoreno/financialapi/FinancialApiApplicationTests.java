@@ -1044,4 +1044,54 @@ class FinancialApiApplicationTests {
 
     }
 
+    @Test
+    void shouldHandleNegativePageParameter() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?page=-1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(0));
+
+    }
+
+    @Test
+    void shouldHandleZeroPageSizeParameter() throws Exception {
+
+        mockMvc.perform(get("/api/transactions?size=0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size").value(10));
+
+    }
+
+    @Test
+    void shouldReturnEmptyContentForPageBeyondAvailableRecords() throws Exception {
+
+        transactionRepository.deleteAll();
+
+        transactionRepository.save(
+                new Transaction(
+                        "Transação teste página 1",
+                        new BigDecimal("20.00"),
+                        TransactionType.RECEITA,
+                        LocalDate.now()
+                )
+        );
+
+        transactionRepository.save(
+                new Transaction(
+                        "Transação teste página 2",
+                        new BigDecimal("30.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.now()
+                )
+        );
+
+        mockMvc.perform(get("/api/transactions?page=99"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.page").value(99))
+                .andExpect(jsonPath("$.totalElements").value(2));
+
+    }
+
 }
