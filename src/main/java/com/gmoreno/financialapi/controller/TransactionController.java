@@ -215,6 +215,22 @@ public class TransactionController {
         return ResponseEntity.ok(response);
     }
 
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Transação excluída com sucesso"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Transação não encontrada",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            )
+                    )
+            )
+    })
+
     @DeleteMapping("/api/transactions/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
 
