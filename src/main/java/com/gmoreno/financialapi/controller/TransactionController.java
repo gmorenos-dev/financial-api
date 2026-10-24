@@ -137,6 +137,27 @@ public class TransactionController {
         return ResponseEntity.ok(summary);
     }
 
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Transação encontrada",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = TransactionResponse.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Transação não encontrada",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            )
+                    )
+            )
+    })
+
     @GetMapping("/api/transactions/{id}")
     public ResponseEntity<TransactionResponse> getTransactionById(
             @PathVariable Long id) {
