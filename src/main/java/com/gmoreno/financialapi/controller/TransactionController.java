@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import com.gmoreno.financialapi.model.TransactionType;
+import org.springdoc.core.annotations.ParameterObject;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -59,6 +60,7 @@ public class TransactionController {
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) BigDecimal minAmount,
             @RequestParam(required = false) BigDecimal maxAmount,
+            @ParameterObject
             @PageableDefault(sort = "id") Pageable pageable) {
 
         Page<TransactionResponse> transactionPage =
