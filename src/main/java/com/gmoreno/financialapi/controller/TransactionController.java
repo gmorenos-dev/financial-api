@@ -18,6 +18,11 @@ import org.springframework.data.web.PageableDefault;
 import com.gmoreno.financialapi.model.TransactionType;
 import org.springdoc.core.annotations.ParameterObject;
 
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Map;
@@ -33,6 +38,23 @@ public class TransactionController {
     public TransactionController(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
+
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Transação criada com sucesso",
+                    content = @Content(
+                            schema = @Schema(implementation = TransactionResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dados da transação inválidos",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
 
     @PostMapping("/api/transactions")
     public ResponseEntity<TransactionResponse> createTransaction(
@@ -126,6 +148,30 @@ public class TransactionController {
 
         return ResponseEntity.ok(response);
     }
+
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Transação atualizada com sucesso",
+                    content = @Content(
+                            schema = @Schema(implementation = TransactionResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Dados da transação inválidos",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Transação não encontrada",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
 
     @PutMapping("/api/transactions/{id}")
     public ResponseEntity<TransactionResponse> updateTransaction(
