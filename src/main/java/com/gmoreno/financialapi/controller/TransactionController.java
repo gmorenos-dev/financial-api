@@ -117,6 +117,27 @@ public class TransactionController {
         );
     }
 
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Resumo financeiro retornado com sucesso",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = FinancialSummaryResponse.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Período incompleto: informe startDate e endDate juntos",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            )
+                    )
+            )
+    })
+
     @GetMapping("/api/transactions/summary")
     public ResponseEntity<?> getFinancialSummary(
             @RequestParam(required = false) LocalDate startDate,
