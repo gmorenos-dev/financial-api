@@ -408,6 +408,8 @@ class FinancialApiApplicationTests {
     @Test
     void shouldReturnValidationErrorsWhenCreatingInvalidTransaction() throws Exception {
 
+        long transactionsBefore = transactionRepository.count();
+
         String requestBody = """
             {
                 "description": "",
@@ -425,6 +427,13 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.errors.amount").value("deve ser maior que 0"))
                 .andExpect(jsonPath("$.errors.type").value("não pode ser nulo"))
                 .andExpect(jsonPath("$.errors.date").value("não pode ser nulo"));
+
+        assertEquals(
+                transactionsBefore,
+                transactionRepository.count(),
+                "Uma transação inválida não deve ser persistida"
+        );
+
     }
     @Test
     void shouldRejectTransactionWithMoreThanTwoDecimalPlaces() throws Exception {
