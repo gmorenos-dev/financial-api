@@ -75,6 +75,18 @@ public class TransactionController {
         return ResponseEntity.status(201).body(response);
     }
 
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de transações retornada com sucesso",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = TransactionPageResponse.class
+                            )
+                    )
+            )
+    })
+
     @GetMapping("/api/transactions")
     public TransactionPageResponse getAllTransactions(
             @RequestParam(required = false) TransactionType type,
