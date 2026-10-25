@@ -72,6 +72,30 @@ class FinancialApiApplicationTests {
                 ).exists())
                 .andExpect(jsonPath(
                         "$.paths['/api/transactions/{id}'].get.responses['404']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions'].post.responses['201']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions'].post.responses['400']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions/{id}'].put.responses['200']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions/{id}'].put.responses['404']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions/{id}'].delete.responses['204']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions/{id}'].delete.responses['404']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions/summary'].get.responses['200']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions/summary'].get.responses['400']"
                 ).exists());
     }
 
