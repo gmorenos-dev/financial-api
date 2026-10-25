@@ -42,7 +42,6 @@ public class TransactionService {
 
         if (minAmount != null && minAmount.compareTo(BigDecimal.ZERO) < 0) {
             throw new InvalidAmountRangeException(
-                    "minAmount",
                     "O valor mínimo não pode ser negativo"
             );
         }
@@ -59,7 +58,6 @@ public class TransactionService {
                 && maxAmount != null
                 && minAmount.compareTo(maxAmount) > 0) {
             throw new InvalidAmountRangeException(
-                    "minAmount",
                     "O valor mínimo não pode ser maior que o valor máximo"
             );
         }
