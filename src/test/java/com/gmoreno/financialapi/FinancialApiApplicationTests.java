@@ -321,6 +321,25 @@ class FinancialApiApplicationTests {
     }
 
     @Test
+    void shouldRejectTransactionWithWhitespaceOnlyDescription() throws Exception {
+        String json = """
+            {
+                "description": "   ",
+                "amount": 100.00,
+                "type": "DESPESA",
+                "date": "2026-10-25"
+            }
+            """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.description")
+                        .value("não pode estar em branco"));
+    }
+
+    @Test
     void shouldRejectTransactionWithNegativeAmount() throws Exception {
         String json = """
         {
