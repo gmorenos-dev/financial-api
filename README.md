@@ -413,6 +413,8 @@ A validação é acionada quando há:
 
 O pipeline executa `./mvnw clean verify` e publica o relatório JaCoCo como artefato da execução.
 
+Além disso, o pipeline valida a configuração do Docker Compose, inicia a aplicação e o PostgreSQL em contêineres, e realiza um teste de integração que cadastra uma transação e consulta os dados retornados pela API. Ao final, o ambiente temporário é encerrado.
+
 O resultado pode ser acompanhado na página:
 
 [Financial API — GitHub Actions](https://github.com/gmorenos-dev/financial-api/actions)
