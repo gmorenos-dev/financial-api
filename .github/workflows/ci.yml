@@ -31,13 +31,37 @@ jobs:
       - name: Executar testes e gerar cobertura
         run: ./mvnw --batch-mode --no-transfer-progress clean verify
 
-      - name: Construir imagem Docker
-        run: docker build --tag financial-api:ci .
-
       - name: Validar Docker Compose
         env:
           DB_PASSWORD: ci-validation-only
         run: docker compose config --quiet
+
+      - name: Iniciar ambiente Docker Compose
+        env:
+          DB_PASSWORD: ci-validation-only
+        run: docker compose up --build --detach
+
+      - name: Verificar API em execução
+        env:
+          DB_PASSWORD: ci-validation-only
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:8080/api/transactions > /dev/null; then
+              echo "API respondeu com sucesso."
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "A API não respondeu dentro do tempo esperado."
+          docker compose logs
+          exit 1
+
+      - name: Encerrar ambiente Docker
+        if: always()
+        env:
+          DB_PASSWORD: ci-validation-only
+        run: docker compose down -v
 
       - name: Publicar relatório JaCoCo
         uses: actions/upload-artifact@v7
