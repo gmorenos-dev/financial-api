@@ -34,6 +34,11 @@ jobs:
       - name: Construir imagem Docker
         run: docker build --tag financial-api:ci .
 
+      - name: Validar Docker Compose
+        env:
+          DB_PASSWORD: ci-validation-only
+        run: docker compose config --quiet
+
       - name: Publicar relatório JaCoCo
         uses: actions/upload-artifact@v7
         with:
