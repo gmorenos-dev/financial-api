@@ -242,3 +242,22 @@ Para executar os testes automatizados:
 ```bash
 ./mvnw test
 ```
+
+### Verificação completa e cobertura
+
+Para executar os testes, gerar o relatório de cobertura e validar os limites mínimos configurados, execute:
+
+```bash
+./mvnw clean verify
+```
+
+O JaCoCo verifica os seguintes limites mínimos de cobertura:
+
+- **Linhas:** 95%.
+- **Ramificações:** 90%.
+
+Após uma execução bem-sucedida, o relatório HTML estará disponível em:
+
+`target/site/jacoco/index.html`
+
+O projeto também executa essa verificação automaticamente no GitHub Actions a cada envio de alterações para a branch `main`.
