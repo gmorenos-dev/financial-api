@@ -1431,4 +1431,24 @@ class FinancialApiApplicationTests {
                         .value("deve ter no máximo 14 dígitos inteiros e 2 casas decimais"));
     }
 
+    @Test
+    void shouldAcceptTransactionAtMaximumAllowedAmount() throws Exception {
+        String requestBody = """
+            {
+                "description": "Teste valor máximo permitido",
+                "amount": 99999999999999.99,
+                "type": "RECEITA",
+                "date": "2026-10-25"
+            }
+            """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.description")
+                        .value("Teste valor máximo permitido"))
+                .andExpect(jsonPath("$.amount")
+                        .value(99999999999999.99));
+    }
 }
