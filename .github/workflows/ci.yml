@@ -1,0 +1,32 @@
+name: Financial API CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Testes automatizados
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Obter código do repositório
+        uses: actions/checkout@v7
+
+      - name: Configurar Java 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Executar testes
+        run: ./mvnw --batch-mode --no-transfer-progress clean test
