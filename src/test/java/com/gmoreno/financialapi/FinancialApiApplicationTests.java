@@ -107,6 +107,9 @@ class FinancialApiApplicationTests {
                         "$.paths['/api/transactions/{id}'].put.responses['400'].content.*.examples.ErroDeValidacao"
                 ).exists())
                 .andExpect(jsonPath(
+                        "$.paths['/api/transactions/{id}'].put.responses['404'].content.*.examples.TransacaoNaoEncontrada"
+                ).exists())
+                .andExpect(jsonPath(
                         "$.paths['/api/transactions/{id}'].delete.responses['404'].content.*.examples.TransacaoNaoEncontrada"
                 ).exists())
                 .andExpect(jsonPath(
