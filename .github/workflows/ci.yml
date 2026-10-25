@@ -28,5 +28,13 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Executar testes
-        run: ./mvnw --batch-mode --no-transfer-progress clean test
+      - name: Executar testes e gerar cobertura
+        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+
+      - name: Publicar relatório JaCoCo
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          if-no-files-found: error
+          retention-days: 14
