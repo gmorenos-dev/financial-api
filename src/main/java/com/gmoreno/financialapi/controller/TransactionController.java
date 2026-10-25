@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -51,7 +52,24 @@ public class TransactionController {
                     responseCode = "400",
                     description = "Dados da transação inválidos",
                     content = @Content(
-                            schema = @Schema(implementation = ErrorResponse.class)
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            ),
+                            examples = @ExampleObject(
+                                    name = "ErroDeValidacao",
+                                    summary = "Exemplo de campos inválidos",
+                                    value = """
+                                {
+                                  "status": 400,
+                                  "message": "Dados da transação inválidos",
+                                  "errors": {
+                                    "description": "não pode estar em branco",
+                                    "amount": "deve ser maior que 0"
+                                  },
+                                  "path": "/api/transactions"
+                                }
+                                """
+                            )
                     )
             )
     })
@@ -133,6 +151,20 @@ public class TransactionController {
                     content = @Content(
                             schema = @Schema(
                                     implementation = ErrorResponse.class
+                            ),
+                            examples = @ExampleObject(
+                                    name = "PeriodoIncompleto",
+                                    summary = "Exemplo de período incompleto",
+                                    value = """
+                                {
+                                  "status": 400,
+                                  "message": "Período incompleto",
+                                  "errors": {
+                                    "period": "startDate e endDate devem ser informados juntos"
+                                  },
+                                  "path": "/api/transactions/summary"
+                                }
+                                """
                             )
                     )
             )
@@ -186,6 +218,18 @@ public class TransactionController {
                     content = @Content(
                             schema = @Schema(
                                     implementation = ErrorResponse.class
+                            ),
+                            examples = @ExampleObject(
+                                    name = "TransacaoNaoEncontrada",
+                                    summary = "Exemplo de transação inexistente",
+                                    value = """
+                                        {
+                                          "status": 404,
+                                          "message": "Transação não encontrada: 86",
+                                          "errors": null,
+                                          "path": "/api/transactions/86"
+                                        }
+                                        """
                             )
                     )
             )
@@ -215,14 +259,44 @@ public class TransactionController {
                     responseCode = "400",
                     description = "Dados da transação inválidos",
                     content = @Content(
-                            schema = @Schema(implementation = ErrorResponse.class)
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            ),
+                            examples = @ExampleObject(
+                                    name = "ErroDeValidacao",
+                                    summary = "Exemplo de atualização inválida",
+                                    value = """
+                                {
+                                  "status": 400,
+                                  "message": "Dados da transação inválidos",
+                                  "errors": {
+                                    "amount": "deve ser maior que 0"
+                                  },
+                                  "path": "/api/transactions/86"
+                                }
+                                """
+                            )
                     )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Transação não encontrada",
                     content = @Content(
-                            schema = @Schema(implementation = ErrorResponse.class)
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            ),
+                            examples = @ExampleObject(
+                                    name = "TransacaoNaoEncontrada",
+                                    summary = "Exemplo de transação inexistente",
+                                    value = """
+                                {
+                                  "status": 404,
+                                  "message": "Transação não encontrada: 86",
+                                  "errors": null,
+                                  "path": "/api/transactions/86"
+                                }
+                                """
+                            )
                     )
             )
     })
@@ -259,6 +333,18 @@ public class TransactionController {
                     content = @Content(
                             schema = @Schema(
                                     implementation = ErrorResponse.class
+                            ),
+                            examples = @ExampleObject(
+                                    name = "TransacaoNaoEncontrada",
+                                    summary = "Exemplo de transação inexistente",
+                                    value = """
+                                        {
+                                          "status": 404,
+                                          "message": "Transação não encontrada: 86",
+                                          "errors": null,
+                                          "path": "/api/transactions/86"
+                                        }
+                                        """
                             )
                     )
             )
