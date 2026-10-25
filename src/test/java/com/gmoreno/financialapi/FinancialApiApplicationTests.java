@@ -365,6 +365,45 @@ class FinancialApiApplicationTests {
     }
 
     @Test
+    void shouldNotUpdateTransactionWhenRequestIsInvalid() throws Exception {
+        Transaction original = transactionRepository.save(
+                new Transaction(
+                        "Conta original",
+                        new BigDecimal("100.00"),
+                        TransactionType.DESPESA,
+                        LocalDate.of(2026, 9, 20)
+                )
+        );
+
+        String requestBody = """
+            {
+                "description": "Tentativa de atualização",
+                "amount": -150.00,
+                "type": "DESPESA",
+                "date": "2026-09-25"
+            }
+            """;
+
+        mockMvc.perform(
+                        put("/api/transactions/" + original.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestBody)
+                )
+                .andExpect(status().isBadRequest());
+
+        Transaction unchanged = transactionRepository
+                .findById(original.getId())
+                .orElseThrow();
+
+        assertEquals("Conta original", unchanged.getDescription());
+        assertEquals(new BigDecimal("100.00"), unchanged.getAmount());
+        assertEquals(
+                LocalDate.of(2026, 9, 20),
+                unchanged.getDate()
+        );
+    }
+
+    @Test
     void shouldReturnNotFoundWhenUpdatingTransactionDoesNotExist() throws Exception {
         String json = """
             {
