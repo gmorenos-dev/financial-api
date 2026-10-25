@@ -63,6 +63,19 @@ class FinancialApiApplicationTests {
     }
 
     @Test
+    void shouldExposeOpenApiDocumentationThroughHttp() throws Exception {
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.openapi").exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions'].get.responses['200']"
+                ).exists())
+                .andExpect(jsonPath(
+                        "$.paths['/api/transactions/{id}'].get.responses['404']"
+                ).exists());
+    }
+
+    @Test
     void shouldCreateTransaction() {
         LocalDate date = LocalDate.of(2026, 9, 17);
         BigDecimal amount = new BigDecimal("150.50");
