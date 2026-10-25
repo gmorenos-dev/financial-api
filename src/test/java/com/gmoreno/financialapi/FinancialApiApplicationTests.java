@@ -214,6 +214,16 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.path").value("/api/transactions/999999"));
     }
     @Test
+    void shouldReturnStandardErrorWhenTransactionIdIsInvalid() throws Exception {
+        mockMvc.perform(get("/api/transactions/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Parâmetro inválido"))
+                .andExpect(jsonPath("$.errors.id")
+                        .value("possui valor inválido"))
+                .andExpect(jsonPath("$.path").value("/api/transactions/abc"));
+    }
+    @Test
     void shouldCreateTransactionThroughHttp() throws Exception {
         String json = """
         {
@@ -1185,6 +1195,18 @@ class FinancialApiApplicationTests {
                 .andExpect(jsonPath("$.errors.startDate")
                         .value("deve estar no formato yyyy-MM-dd"));
 
+    }
+
+    @Test
+    void shouldReturnStandardErrorWhenEndDateHasInvalidFormat() throws Exception {
+        mockMvc.perform(get("/api/transactions")
+                        .param("endDate", "22-10-2026"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Parâmetro inválido"))
+                .andExpect(jsonPath("$.errors.endDate")
+                        .value("deve estar no formato yyyy-MM-dd"))
+                .andExpect(jsonPath("$.path").value("/api/transactions"));
     }
 
     @Test
