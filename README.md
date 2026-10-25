@@ -1,6 +1,8 @@
 # Financial API
 
-API REST para gerenciamento de transações financeiras, desenvolvida com Java e Spring Boot.
+[![Financial API CI](https://github.com/gmorenos-dev/financial-api/actions/workflows/ci.yml/badge.svg)](https://github.com/gmorenos-dev/financial-api/actions/workflows/ci.yml)
+
+API REST para gerenciamento de transações financeiras, desenvolvida com Java e Spring Boot. O projeto demonstra a implementação de operações CRUD, validação de dados, filtros, paginação, tratamento padronizado de erros, documentação interativa e testes automatizados com verificação de cobertura.
 
 ## Funcionalidades
 
@@ -9,20 +11,56 @@ API REST para gerenciamento de transações financeiras, desenvolvida com Java e
 - Listagem com paginação e ordenação.
 - Filtros por tipo, período e valor.
 - Atualização e exclusão de transações.
-- Consulta de resumo financeiro.
-- Tratamento de erros de validação.
+- Consulta de resumo financeiro por período.
+- Validação de dados e parâmetros.
+- Tratamento padronizado de erros.
+- Documentação interativa dos endpoints com Swagger UI.
+- Testes automatizados e verificação de cobertura com JaCoCo.
+- Integração contínua com GitHub Actions.
 
 ## Tecnologias
 
-- Java
-- Spring Boot
-- Spring Data JPA
-- Maven
-- PostgreSQL
+- **Java 25:** linguagem de programação.
+- **Spring Boot 4.1.1:** estrutura principal da aplicação.
+- **Spring Data JPA:** persistência e acesso aos dados.
+- **PostgreSQL:** banco de dados relacional.
+- **Maven Wrapper:** gerenciamento de dependências e execução do projeto.
+- **Springdoc OpenAPI:** documentação da API.
+- **Swagger UI:** visualização e experimentação dos endpoints.
+- **JUnit e Spring Boot Test:** testes automatizados.
+- **JaCoCo:** análise de cobertura dos testes.
+- **GitHub Actions:** integração contínua.
+
+## Pré-requisitos
+
+Antes de executar o projeto, certifique-se de que o ambiente possui:
+
+- Java 25 instalado.
+- PostgreSQL instalado ou acessível.
+- Banco de dados configurado para a aplicação.
+
+O projeto inclui o Maven Wrapper (`mvnw`), portanto não é necessário instalar o Maven separadamente.
 
 ## Executando o projeto
 
-Configure o acesso ao PostgreSQL conforme as configurações da aplicação.
+### 1. Obter o código-fonte
+
+Clone o repositório e entre no diretório do projeto:
+
+```bash
+git clone https://github.com/gmorenos-dev/financial-api.git
+cd financial-api
+```
+
+### 2. Configurar o banco de dados
+
+Configure a conexão com o PostgreSQL de acordo com as propriedades utilizadas pela aplicação.
+
+Antes de iniciar, verifique se o banco de dados está disponível e se os parâmetros de conexão estão definidos corretamente no ambiente local.
+
+Não publique senhas ou outras credenciais no repositório.
+
+### 3. Iniciar a aplicação
 
 Na raiz do projeto, execute:
 
@@ -30,41 +68,50 @@ Na raiz do projeto, execute:
 ./mvnw spring-boot:run
 ```
 
-A aplicação é acessada, por padrão, em:
+Por padrão, a aplicação fica disponível em:
 
 `http://localhost:8080`
+
+### 4. Acessar a documentação interativa
+
+Com a aplicação em execução, acesse:
+
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **Especificação OpenAPI em JSON:** http://localhost:8080/v3/api-docs
+
+O Swagger UI permite consultar os parâmetros dos endpoints, visualizar exemplos documentados de requisições e respostas e executar chamadas diretamente pelo navegador.
 
 ## Endpoints
 
 | Método | Endpoint | Descrição |
 |---|---|---|
-| POST | `/api/transactions` | Cadastrar transação |
-| GET | `/api/transactions` | Listar transações |
-| GET | `/api/transactions/{id}` | Consultar transação por ID |
-| PUT | `/api/transactions/{id}` | Atualizar transação |
-| DELETE | `/api/transactions/{id}` | Excluir transação |
-| GET | `/api/transactions/summary` | Consultar resumo financeiro |
+| `POST` | `/api/transactions` | Cadastrar transação |
+| `GET` | `/api/transactions` | Listar transações |
+| `GET` | `/api/transactions/{id}` | Consultar transação por ID |
+| `PUT` | `/api/transactions/{id}` | Atualizar transação |
+| `DELETE` | `/api/transactions/{id}` | Excluir transação |
+| `GET` | `/api/transactions/summary` | Consultar resumo financeiro |
 
 ## Modelo de transação
 
 | Campo | Tipo | Regra |
 |---|---|---|
-| `id` | Long | Identificador da transação |
-| `description` | Texto | Obrigatório, não pode ficar em branco |
-| `amount` | Decimal | Obrigatório, maior que zero, até 14 dígitos inteiros e 2 casas decimais |
+| `id` | `Long` | Identificador da transação, atribuído pelo banco de dados |
+| `description` | Texto | Obrigatório e não pode ficar em branco |
+| `amount` | `BigDecimal` | Obrigatório, maior que zero, até 14 dígitos inteiros e 2 casas decimais |
 | `type` | Enumeração | `RECEITA` ou `DESPESA` |
-| `date` | Data | Obrigatória, formato `yyyy-MM-dd` |
+| `date` | `LocalDate` | Obrigatória, formato `yyyy-MM-dd` |
 
 ## Cadastrar uma transação
 
-Requisição:
+**Requisição**
 
 ```http
 POST /api/transactions
 Content-Type: application/json
 ```
 
-Corpo da requisição:
+**Corpo da requisição**
 
 ```json
 {
@@ -75,7 +122,7 @@ Corpo da requisição:
 }
 ```
 
-Resposta esperada: HTTP `201 Created`.
+**Resposta esperada:** HTTP `201 Created`.
 
 ```json
 {
@@ -99,6 +146,8 @@ GET /api/transactions/86
 
 Retorna a transação correspondente ao ID informado.
 
+Uma consulta bem-sucedida retorna HTTP `200 OK`. Se a transação não for encontrada, a API retorna HTTP `404 Not Found`.
+
 ## Listar transações
 
 ```http
@@ -107,7 +156,7 @@ GET /api/transactions
 
 A resposta contém os registros da página e os metadados da paginação.
 
-Exemplo ilustrativo:
+**Exemplo ilustrativo de resposta**
 
 ```json
 {
@@ -137,7 +186,7 @@ Exemplo ilustrativo:
 
 Os padrões são página `0`, tamanho `10` e ordenação por ID crescente.
 
-Exemplo:
+**Exemplo:**
 
 ```http
 GET /api/transactions?page=0&size=10&sort=id,asc
@@ -161,13 +210,13 @@ GET /api/transactions?page=0&size=10&sort=amount,desc
 
 Os filtros podem ser combinados.
 
-Exemplo:
+**Exemplo:**
 
 ```http
 GET /api/transactions?type=DESPESA&startDate=2026-09-01&endDate=2026-09-30&minAmount=100&maxAmount=200&page=0&size=10&sort=id,asc
 ```
 
-Regras dos filtros:
+**Regras dos filtros:**
 
 - `type` aceita `RECEITA` ou `DESPESA`.
 - `startDate` e `endDate` devem ser informados juntos.
@@ -178,13 +227,15 @@ Regras dos filtros:
 
 ## Resumo financeiro
 
-Consulta sem definir um período:
+O resumo financeiro permite consultar os totais de receitas, despesas e saldo.
+
+### Consulta sem período
 
 ```http
 GET /api/transactions/summary
 ```
 
-Consulta de um período específico:
+### Consulta de um período específico
 
 ```http
 GET /api/transactions/summary?startDate=2026-09-01&endDate=2026-09-30
@@ -192,7 +243,7 @@ GET /api/transactions/summary?startDate=2026-09-01&endDate=2026-09-30
 
 Os parâmetros de data devem ser informados juntos ou omitidos.
 
-Exemplo ilustrativo de resposta:
+**Exemplo ilustrativo de resposta:**
 
 ```json
 {
@@ -202,17 +253,43 @@ Exemplo ilustrativo de resposta:
 }
 ```
 
+Os valores apresentados são exemplos, não dados reais do banco de dados.
+
+## Atualizar uma transação
+
+Para atualizar uma transação existente, utilize:
+
+```http
+PUT /api/transactions/86
+Content-Type: application/json
+```
+
+**Corpo da requisição:**
+
+```json
+{
+  "description": "Salário atualizado",
+  "amount": 5500.00,
+  "type": "RECEITA",
+  "date": "2026-10-05"
+}
+```
+
+O ID informado na URL identifica a transação a ser atualizada.
+
 ## Excluir uma transação
 
 ```http
 DELETE /api/transactions/86
 ```
 
-Uma exclusão bem-sucedida retorna HTTP `204 No Content`, sem corpo de resposta.
+Uma exclusão bem-sucedida retorna HTTP `204 No Content`, sem corpo de resposta. Se a transação não for encontrada, a API retorna HTTP `404 Not Found`.
 
 ## Tratamento de erros
 
-As respostas de erro seguem esta estrutura:
+As respostas de erro seguem uma estrutura padronizada.
+
+**Exemplo ilustrativo:**
 
 ```json
 {
@@ -233,9 +310,9 @@ As respostas de erro seguem esta estrutura:
 | `400 Bad Request` | Dados ou parâmetros inválidos |
 | `404 Not Found` | Transação não encontrada |
 
-As mensagens de erro variam conforme a validação que falhou.
+As mensagens de erro variam conforme a validação ou a situação que provocou a falha.
 
-## Testes
+## Testes automatizados
 
 Para executar os testes automatizados:
 
@@ -243,21 +320,48 @@ Para executar os testes automatizados:
 ./mvnw test
 ```
 
-### Verificação completa e cobertura
-
-Para executar os testes, gerar o relatório de cobertura e validar os limites mínimos configurados, execute:
+Para executar uma validação completa, incluindo a compilação, os testes, a geração do relatório de cobertura e a verificação dos limites configurados, execute:
 
 ```bash
 ./mvnw clean verify
 ```
 
-O JaCoCo verifica os seguintes limites mínimos de cobertura:
+O projeto utiliza o JaCoCo para medir a cobertura do código executado pelos testes.
 
-- **Linhas:** 95%.
-- **Ramificações:** 90%.
+### Limites mínimos de cobertura
 
-Após uma execução bem-sucedida, o relatório HTML estará disponível em:
+A verificação de cobertura está configurada para exigir:
+
+- **Cobertura de linhas:** mínimo de 95%.
+- **Cobertura de ramificações:** mínimo de 90%.
+
+Se os limites não forem atendidos, a etapa de verificação do Maven falhará.
+
+### Relatório de cobertura
+
+Após executar `./mvnw clean verify`, o relatório HTML estará disponível em:
 
 `target/site/jacoco/index.html`
 
-O projeto também executa essa verificação automaticamente no GitHub Actions a cada envio de alterações para a branch `main`.
+Abra esse arquivo em um navegador para consultar a cobertura geral, os pacotes, as classes e as linhas de código não cobertas pelos testes.
+
+## Integração contínua
+
+O projeto utiliza o GitHub Actions para executar automaticamente a validação do código.
+
+O fluxo de integração contínua está definido em:
+
+`.github/workflows/ci.yml`
+
+A validação é acionada quando há:
+
+- Envio de alterações para a branch `main`.
+- Abertura ou atualização de um *pull request* direcionado à branch `main`.
+
+O pipeline executa `./mvnw clean verify` e publica o relatório JaCoCo como artefato da execução.
+
+O resultado pode ser acompanhado na página:
+
+[Financial API — GitHub Actions](https://github.com/gmorenos-dev/financial-api/actions)
+
+O indicador de status no início deste README também permite consultar o resultado mais recente do pipeline.
