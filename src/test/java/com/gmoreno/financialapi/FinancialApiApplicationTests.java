@@ -1374,4 +1374,23 @@ class FinancialApiApplicationTests {
 
     }
 
+    @Test
+    void shouldRejectTransactionWithMoreThanFourteenIntegerDigits() throws Exception {
+        String requestBody = """
+            {
+                "description": "Teste limite de dígitos",
+                "amount": 100000000000000.00,
+                "type": "DESPESA",
+                "date": "2026-10-25"
+            }
+            """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.amount")
+                        .value("deve ter no máximo 14 dígitos inteiros e 2 casas decimais"));
+    }
+
 }
