@@ -338,6 +338,25 @@ class FinancialApiApplicationTests {
     }
 
     @Test
+    void shouldRejectTransactionWithZeroAmount() throws Exception {
+        String json = """
+            {
+                "description": "Teste valor zero",
+                "amount": 0.00,
+                "type": "DESPESA",
+                "date": "2026-10-25"
+            }
+            """;
+
+        mockMvc.perform(post("/api/transactions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.amount")
+                        .value("deve ser maior que 0"));
+    }
+
+    @Test
     void shouldRejectTransactionWithoutType() throws Exception {
         String json = """
         {
