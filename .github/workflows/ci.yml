@@ -48,14 +48,37 @@ jobs:
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://localhost:8080/api/transactions > /dev/null; then
               echo "API respondeu com sucesso."
-              exit 0
+              break
             fi
+
+            if [ "$attempt" -eq 30 ]; then
+              echo "A API não respondeu dentro do tempo esperado."
+              docker compose logs
+              exit 1
+            fi
+
             sleep 2
           done
 
-          echo "A API não respondeu dentro do tempo esperado."
-          docker compose logs
-          exit 1
+          created=$(curl --fail --silent --show-error \
+            -X POST http://localhost:8080/api/transactions \
+            -H "Content-Type: application/json" \
+            -d '{"description":"CI Docker smoke test","amount":12.34,"type":"RECEITA","date":"2026-01-01"}')
+
+          transaction_id=$(printf '%s' "$created" |
+            python3 -c 'import json, sys; print(json.load(sys.stdin)["id"])')
+
+          retrieved=$(curl --fail --silent --show-error \
+            "http://localhost:8080/api/transactions/${transaction_id}")
+
+          printf '%s' "$retrieved" | python3 -c '
+          import json, sys
+          transaction = json.load(sys.stdin)
+          assert transaction["description"] == "CI Docker smoke test"
+          assert transaction["type"] == "RECEITA"
+          assert float(transaction["amount"]) == 12.34
+          print("Cadastro e consulta no PostgreSQL: aprovados.")
+          '
 
       - name: Encerrar ambiente Docker
         if: always()
