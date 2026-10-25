@@ -81,6 +81,59 @@ Com a aplicação em execução, acesse:
 
 O Swagger UI permite consultar os parâmetros dos endpoints, visualizar exemplos documentados de requisições e respostas e executar chamadas diretamente pelo navegador.
 
+### Executando com Docker Compose
+
+O projeto inclui uma configuração Docker Compose que inicia a Financial API e o PostgreSQL em contêineres separados.
+
+#### 1. Configurar as variáveis de ambiente
+
+Crie o arquivo `.env` a partir do modelo:
+
+```bash
+cp .env.example .env
+```
+
+Edite o arquivo `.env` e substitua `DB_PASSWORD` por uma senha forte. Esse arquivo contém configurações locais e não deve ser enviado ao Git.
+
+#### 2. Iniciar a aplicação e o banco de dados
+
+Na raiz do projeto, execute:
+
+```bash
+docker compose up --build -d
+```
+
+O Docker Compose constrói a imagem da aplicação, inicia o PostgreSQL e inicia a API após a verificação de saúde do banco.
+
+Para consultar o estado dos contêineres:
+
+```bash
+docker compose ps
+```
+
+#### 3. Acessar a aplicação
+
+Com os serviços em execução:
+
+- **API:** http://localhost:8080
+- **Swagger UI:** http://localhost:8080/swagger-ui/index.html
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
+- **PostgreSQL:** porta `5435` no computador local.
+
+A aplicação se conecta ao PostgreSQL pela rede interna do Docker Compose. A porta `5435` é publicada para permitir conexões de ferramentas locais.
+
+#### 4. Encerrar os serviços
+
+Para interromper e remover os contêineres e a rede:
+
+```bash
+docker compose down
+```
+
+O volume nomeado do PostgreSQL é preservado, portanto os dados permanecem disponíveis quando os serviços são iniciados novamente.
+
+**Atenção:** `docker compose down -v` também remove o volume do banco de dados e pode apagar os dados armazenados.
+
 ## Endpoints
 
 | Método | Endpoint | Descrição |
