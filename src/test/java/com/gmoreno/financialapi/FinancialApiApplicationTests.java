@@ -389,7 +389,9 @@ class FinancialApiApplicationTests {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(requestBody)
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.amount")
+                        .value("deve ser maior que 0"));
 
         Transaction unchanged = transactionRepository
                 .findById(original.getId())
