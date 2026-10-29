@@ -6,8 +6,8 @@ BEGIN
         WHERE conname = 'transaction_type_check'
           AND conrelid = 'public.transaction'::regclass
     ) THEN
-        ALTER TABLE public.transaction
-            ADD CONSTRAINT transaction_type_check
-            CHECK (type IN ('RECEITA', 'DESPESA'));
-    END IF;
+ALTER TABLE public.transaction
+    ADD CONSTRAINT transaction_type_check
+        CHECK (type IN ('RECEITA', 'DESPESA'));
+END IF;
 END $$;
