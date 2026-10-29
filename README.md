@@ -34,34 +34,53 @@ API REST para gerenciamento de transações financeiras, desenvolvida com Java e
 
 ## Pré-requisitos
 
-Antes de executar o projeto, certifique-se de que o ambiente possui:
+Os requisitos dependem da forma escolhida para executar a aplicação.
 
-- Java 25 instalado.
-- PostgreSQL instalado ou acessível.
-- Banco de dados configurado para a aplicação.
+| Requisito | Java e Maven | Docker Compose | Imagem publicada |
+|---|---|---|---|
+| Git | Sim | Sim | Sim |
+| Java 25 | Sim | Não | Não |
+| PostgreSQL | Sim | Não | Não |
+| Docker com Docker Compose | Não | Sim | Sim |
+| Compilação do código-fonte | Sim | Sim | Não |
 
 O projeto inclui o Maven Wrapper (`mvnw`), portanto não é necessário instalar o Maven separadamente.
 
-## Executando o projeto
+## Formas de executar a aplicação
 
-### 1. Obter o código-fonte
+A Financial API pode ser executada de três maneiras. Escolha a opção mais adequada ao seu objetivo.
 
-Clone o repositório e entre no diretório do projeto:
+- **Opção 1 — Java e Maven:** indicada para estudar o código, executar testes e desenvolver novas funcionalidades.
+- **Opção 2 — Docker Compose:** indicada para executar a aplicação completa e construir a imagem localmente.
+- **Opção 3 — Imagem publicada no GHCR:** indicada para testar uma versão pronta da API sem compilar o código-fonte.
+
+### Opção 1 — Executar com Java e Maven
+
+Essa opção executa a aplicação diretamente no ambiente Java, utilizando um PostgreSQL já instalado e configurado.
+
+#### 1. Obter o código-fonte
 
 ```bash
 git clone https://github.com/gmorenos-dev/financial-api.git
 cd financial-api
 ```
 
-### 2. Configurar o banco de dados
+#### 2. Configurar a conexão com o PostgreSQL
 
-Configure a conexão com o PostgreSQL de acordo com as propriedades utilizadas pela aplicação.
+Certifique-se de que o PostgreSQL esteja em execução e que o banco `financial_api` e o usuário `financial_api_user` estejam configurados.
 
-Antes de iniciar, verifique se o banco de dados está disponível e se os parâmetros de conexão estão definidos corretamente no ambiente local.
+Defina as variáveis de ambiente utilizadas pela aplicação, ajustando o endereço e a senha conforme seu ambiente:
 
-Não publique senhas ou outras credenciais no repositório.
+```bash
+export DB_URL="jdbc:postgresql://localhost:5432/financial_api"
+export DB_PASSWORD="substitua_pela_senha_do_banco"
+```
 
-### 3. Iniciar a aplicação
+`DB_PASSWORD` deve conter a senha do usuário `financial_api_user`. Não publique credenciais no repositório.
+
+Se o PostgreSQL estiver em outra máquina ou utilizar outra porta, ajuste `DB_URL`.
+
+#### 3. Iniciar a aplicação
 
 Na raiz do projeto, execute:
 
@@ -69,24 +88,30 @@ Na raiz do projeto, execute:
 ./mvnw spring-boot:run
 ```
 
-Por padrão, a aplicação fica disponível em:
+A aplicação ficará disponível em `http://localhost:8080`.
 
-`http://localhost:8080`
+#### 4. Acessar a API
 
-### 4. Acessar a documentação interativa
+- **Swagger UI:** http://localhost:8080/swagger-ui/index.html
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
+- **Listagem de transações:** http://localhost:8080/api/transactions
 
-Com a aplicação em execução, acesse:
+Para encerrar a aplicação, pressione `Ctrl+C` no terminal em que ela está sendo executada.
 
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **Especificação OpenAPI em JSON:** http://localhost:8080/v3/api-docs
+### Opção 2 — Construir e executar com Docker Compose
 
-O Swagger UI permite consultar os parâmetros dos endpoints, visualizar exemplos documentados de requisições e respostas e executar chamadas diretamente pelo navegador.
+Essa opção constrói a imagem da aplicação a partir do código-fonte e inicia a API e o PostgreSQL em contêineres separados.
 
-### Executando com Docker Compose
+Não é necessário instalar Java ou PostgreSQL diretamente no computador. É necessário ter o Docker instalado, com o Docker Compose disponível.
 
-O projeto inclui uma configuração Docker Compose que inicia a Financial API e o PostgreSQL em contêineres separados.
+#### 1. Obter o código-fonte
 
-#### 1. Configurar as variáveis de ambiente
+```bash
+git clone https://github.com/gmorenos-dev/financial-api.git
+cd financial-api
+```
+
+#### 2. Configurar as variáveis de ambiente
 
 Crie o arquivo `.env` a partir do modelo:
 
@@ -94,9 +119,11 @@ Crie o arquivo `.env` a partir do modelo:
 cp .env.example .env
 ```
 
-Edite o arquivo `.env` e substitua `DB_PASSWORD` por uma senha forte. Esse arquivo contém configurações locais e não deve ser enviado ao Git.
+Edite o arquivo `.env` e defina uma senha forte para `DB_PASSWORD`.
 
-#### 2. Iniciar a aplicação e o banco de dados
+O arquivo contém configurações locais e não deve ser enviado ao GitHub.
+
+#### 3. Construir e iniciar os serviços
 
 Na raiz do projeto, execute:
 
@@ -104,26 +131,24 @@ Na raiz do projeto, execute:
 docker compose up --build -d
 ```
 
-O Docker Compose constrói a imagem da aplicação, inicia o PostgreSQL e inicia a API após a verificação de saúde do banco.
+O Docker Compose construirá a imagem local da API, iniciará o PostgreSQL e iniciará a aplicação após a verificação de saúde do banco.
 
-Para consultar o estado dos contêineres:
+Consulte o estado dos contêineres:
 
 ```bash
 docker compose ps
 ```
 
-#### 3. Acessar a aplicação
+#### 4. Acessar a aplicação
 
-Com os serviços em execução:
-
-- **API:** http://localhost:8080
+- **API:** http://localhost:8080/api/transactions
 - **Swagger UI:** http://localhost:8080/swagger-ui/index.html
 - **OpenAPI JSON:** http://localhost:8080/v3/api-docs
 - **PostgreSQL:** porta `5435` no computador local.
 
-A aplicação se conecta ao PostgreSQL pela rede interna do Docker Compose. A porta `5435` é publicada para permitir conexões de ferramentas locais.
+A API utiliza a rede interna do Docker Compose para conectar-se ao PostgreSQL pela porta `5432`. A porta `5435` é publicada para permitir conexões de ferramentas instaladas no computador.
 
-#### 4. Encerrar os serviços
+#### 5. Encerrar os serviços
 
 Para interromper e remover os contêineres e a rede:
 
@@ -135,75 +160,89 @@ O volume nomeado do PostgreSQL é preservado, portanto os dados permanecem dispo
 
 **Atenção:** `docker compose down -v` também remove o volume do banco de dados e pode apagar os dados armazenados.
 
-### Executando a imagem publicada no GHCR
+### Opção 3 — Executar a imagem publicada no GHCR
 
-O projeto publica imagens Docker no GitHub Container Registry (GHCR) por meio do GitHub Actions. Assim, é possível executar uma versão publicada da API sem compilar o código-fonte localmente.
+Essa opção utiliza uma imagem já construída e publicada no GitHub Container Registry (GHCR). Ela permite testar uma versão específica da API sem compilar o código-fonte.
 
-**Imagem publicada:** `ghcr.io/gmorenos-dev/financial-api:v1.0.1`
+**Versão documentada:** `v1.0.1`
 
-#### 1. Preparar o ambiente
+**Imagem:** `ghcr.io/gmorenos-dev/financial-api:v1.0.1`
 
-Certifique-se de que o arquivo `.env` esteja configurado, conforme as instruções da seção anterior, e que contenha a variável `DB_PASSWORD`.
+É necessário ter Git e Docker com Docker Compose disponíveis. Não é necessário instalar Java, Maven ou PostgreSQL diretamente no computador.
 
-Inicie o PostgreSQL e interrompa a aplicação local do Docker Compose para liberar a porta `8080`:
+#### 1. Obter os arquivos de configuração
+
+Clone o repositório para obter o arquivo `compose.yaml` e o modelo de configuração:
+
+```bash
+git clone https://github.com/gmorenos-dev/financial-api.git
+cd financial-api
+```
+
+Crie o arquivo `.env` e configure uma senha forte para `DB_PASSWORD`:
+
+```bash
+cp .env.example .env
+```
+
+O arquivo `.env` não deve ser enviado ao GitHub.
+
+
+Para garantir a compatibilidade entre o Docker Compose e o comando `docker run --env-file`, defina `DB_PASSWORD` no formato `DB_PASSWORD=valor`, sem aspas ou espaços. Utilize uma senha forte e não compartilhe o arquivo `.env` nem o envie ao repositório.
+
+#### 2. Iniciar somente o banco de dados
 
 ```bash
 docker compose up -d db
-docker compose stop app
 ```
 
-Esses comandos não removem o volume de dados do PostgreSQL.
+O comando inicia o PostgreSQL sem construir nem iniciar a aplicação local.
 
-#### 2. Baixar a imagem
+Aguarde até que o banco esteja saudável:
+
+```bash
+docker compose ps
+```
+
+#### 3. Baixar a imagem publicada
 
 ```bash
 docker pull ghcr.io/gmorenos-dev/financial-api:v1.0.1
 ```
 
-Utilizar uma tag de versão específica permite executar uma versão conhecida da aplicação.
+A imagem é identificada pela tag da versão, o que permite testar uma publicação específica.
 
-#### 3. Executar a imagem publicada
+#### 4. Executar a aplicação publicada
 
-Carregue as variáveis do arquivo `.env` no terminal:
+Se já houver outra aplicação utilizando a porta `8080`, encerre-a antes de prosseguir.
 
-```bash
-set -a
-source .env
-set +a
-```
-
-Em seguida, execute a aplicação:
+Execute a imagem publicada, carregando as variáveis do arquivo `.env` diretamente pelo Docker:
 
 ```bash
 docker run -d \
   --name financial-api-release \
   --network financial-api_default \
+  --env-file .env \
   -e DB_URL=jdbc:postgresql://db:5432/financial_api \
-  -e DB_PASSWORD \
   -p 8080:8080 \
   --restart unless-stopped \
   ghcr.io/gmorenos-dev/financial-api:v1.0.1
 ```
 
-Após criar o contêiner, remova a senha das variáveis exportadas no terminal:
+A aplicação utiliza a rede Docker Compose para acessar o PostgreSQL pelo nome do serviço `db`. A variável `DB_URL` aponta para a porta interna `5432` do banco.
 
-```bash
-unset DB_PASSWORD
-```
+O comando pressupõe que a rede se chama `financial-api_default`, como ocorre quando o projeto utiliza o nome padrão `financial-api`. Se o nome da rede for diferente, ajuste o parâmetro `--network`.
 
-A aplicação se conecta ao PostgreSQL pelo nome do serviço `db`, usando a rede interna do Docker Compose. A porta `8080` fica disponível para acessar a API pelo computador.
 
-O nome da rede utilizado no exemplo é `financial-api_default`, correspondente ao nome padrão do projeto Docker Compose. Se a rede tiver outro nome, ajuste o parâmetro `--network`.
+#### 5. Verificar a inicialização
 
-#### 4. Verificar a aplicação
-
-Consulte os logs de inicialização:
+Consulte os logs da aplicação:
 
 ```bash
 docker logs --tail=50 financial-api-release
 ```
 
-Confirme que a aplicação iniciou sem falhas de autenticação ou divergência de checksum do Flyway.
+Verifique se a aplicação iniciou sem erros de autenticação ou divergência de checksum do Flyway.
 
 Teste o endpoint de listagem:
 
@@ -211,15 +250,13 @@ Teste o endpoint de listagem:
 curl -i http://localhost:8080/api/transactions
 ```
 
-#### 5. Acessar a API e a documentação
-
-Com a aplicação em execução, os endereços são:
+#### 6. Acessar a API
 
 - **API:** http://localhost:8080/api/transactions
 - **Swagger UI:** http://localhost:8080/swagger-ui/index.html
 - **OpenAPI JSON:** http://localhost:8080/v3/api-docs
 
-#### 6. Encerrar a aplicação publicada
+#### 7. Encerrar a execução
 
 Para remover somente o contêiner da imagem publicada:
 
@@ -227,13 +264,23 @@ Para remover somente o contêiner da imagem publicada:
 docker rm -f financial-api-release
 ```
 
-Esse comando não remove a imagem do GHCR nem os dados do PostgreSQL.
+Esse comando não remove a imagem do GHCR nem o volume do PostgreSQL.
 
-Para voltar a executar a aplicação construída localmente pelo Docker Compose:
+Para encerrar também o banco e remover a rede do Docker Compose:
 
 ```bash
-docker compose up -d app
+docker compose down
 ```
+
+O volume do PostgreSQL permanece preservado. Evite `docker compose down -v` quando desejar manter os dados.
+
+Para voltar a executar a aplicação construída localmente pelo Docker Compose, depois de remover o contêiner `financial-api-release`, execute:
+
+```bash
+docker compose up --build -d app
+```
+
+
 
 ## Endpoints
 
