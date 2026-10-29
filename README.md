@@ -135,6 +135,106 @@ O volume nomeado do PostgreSQL é preservado, portanto os dados permanecem dispo
 
 **Atenção:** `docker compose down -v` também remove o volume do banco de dados e pode apagar os dados armazenados.
 
+### Executando a imagem publicada no GHCR
+
+O projeto publica imagens Docker no GitHub Container Registry (GHCR) por meio do GitHub Actions. Assim, é possível executar uma versão publicada da API sem compilar o código-fonte localmente.
+
+**Imagem publicada:** `ghcr.io/gmorenos-dev/financial-api:v1.0.1`
+
+#### 1. Preparar o ambiente
+
+Certifique-se de que o arquivo `.env` esteja configurado, conforme as instruções da seção anterior, e que contenha a variável `DB_PASSWORD`.
+
+Inicie o PostgreSQL e interrompa a aplicação local do Docker Compose para liberar a porta `8080`:
+
+```bash
+docker compose up -d db
+docker compose stop app
+```
+
+Esses comandos não removem o volume de dados do PostgreSQL.
+
+#### 2. Baixar a imagem
+
+```bash
+docker pull ghcr.io/gmorenos-dev/financial-api:v1.0.1
+```
+
+Utilizar uma tag de versão específica permite executar uma versão conhecida da aplicação.
+
+#### 3. Executar a imagem publicada
+
+Carregue as variáveis do arquivo `.env` no terminal:
+
+```bash
+set -a
+source .env
+set +a
+```
+
+Em seguida, execute a aplicação:
+
+```bash
+docker run -d \
+  --name financial-api-release \
+  --network financial-api_default \
+  -e DB_URL=jdbc:postgresql://db:5432/financial_api \
+  -e DB_PASSWORD \
+  -p 8080:8080 \
+  --restart unless-stopped \
+  ghcr.io/gmorenos-dev/financial-api:v1.0.1
+```
+
+Após criar o contêiner, remova a senha das variáveis exportadas no terminal:
+
+```bash
+unset DB_PASSWORD
+```
+
+A aplicação se conecta ao PostgreSQL pelo nome do serviço `db`, usando a rede interna do Docker Compose. A porta `8080` fica disponível para acessar a API pelo computador.
+
+O nome da rede utilizado no exemplo é `financial-api_default`, correspondente ao nome padrão do projeto Docker Compose. Se a rede tiver outro nome, ajuste o parâmetro `--network`.
+
+#### 4. Verificar a aplicação
+
+Consulte os logs de inicialização:
+
+```bash
+docker logs --tail=50 financial-api-release
+```
+
+Confirme que a aplicação iniciou sem falhas de autenticação ou divergência de checksum do Flyway.
+
+Teste o endpoint de listagem:
+
+```bash
+curl -i http://localhost:8080/api/transactions
+```
+
+#### 5. Acessar a API e a documentação
+
+Com a aplicação em execução, os endereços são:
+
+- **API:** http://localhost:8080/api/transactions
+- **Swagger UI:** http://localhost:8080/swagger-ui/index.html
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
+
+#### 6. Encerrar a aplicação publicada
+
+Para remover somente o contêiner da imagem publicada:
+
+```bash
+docker rm -f financial-api-release
+```
+
+Esse comando não remove a imagem do GHCR nem os dados do PostgreSQL.
+
+Para voltar a executar a aplicação construída localmente pelo Docker Compose:
+
+```bash
+docker compose up -d app
+```
+
 ## Endpoints
 
 | Método | Endpoint | Descrição |
