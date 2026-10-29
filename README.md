@@ -30,6 +30,7 @@ API REST para gerenciamento de transações financeiras, desenvolvida com Java e
 - **JUnit e Spring Boot Test:** testes automatizados.
 - **JaCoCo:** análise de cobertura dos testes.
 - **GitHub Actions:** integração contínua.
+- **Flyway:** versionamento e execução de migrações do banco de dados.
 
 ## Pré-requisitos
 
@@ -154,6 +155,23 @@ O volume nomeado do PostgreSQL é preservado, portanto os dados permanecem dispo
 | `amount` | `BigDecimal` | Obrigatório, maior que zero, até 14 dígitos inteiros e 2 casas decimais |
 | `type` | Enumeração | `RECEITA` ou `DESPESA` |
 | `date` | `LocalDate` | Obrigatória, formato `yyyy-MM-dd` |
+
+## Migrações do banco de dados
+
+O projeto utiliza o Flyway para versionar e aplicar alterações na estrutura do PostgreSQL.
+
+As migrações SQL ficam em:
+
+`src/main/resources/db/migration/`
+
+Cada arquivo possui uma versão e uma descrição. Atualmente, o projeto contém:
+
+- `V1__create_transaction_table.sql`: cria a tabela de transações e a restrição para os tipos aceitos.
+- `V2__ensure_transaction_type_constraint.sql`: garante a existência da restrição `transaction_type_check`, permitindo a adoção do Flyway em bancos que já possuem a tabela.
+
+Ao iniciar a aplicação, o Flyway verifica o histórico e aplica as migrações pendentes. O Hibernate utiliza `ddl-auto=validate` para verificar a compatibilidade entre as entidades Java e o esquema do banco, sem modificá-lo automaticamente.
+
+Para adicionar uma nova alteração estrutural, crie uma nova migração versionada, como `V3__descricao_da_alteracao.sql`, em vez de modificar migrações já aplicadas.
 
 ## Cadastrar uma transação
 
