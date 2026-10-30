@@ -108,6 +108,10 @@ Essa opção constrói a imagem da aplicação a partir do código-fonte e inici
 
 Não é necessário instalar Java ou PostgreSQL diretamente no computador. É necessário ter o Docker instalado, com o Docker Compose disponível.
 
+**Ainda não tem o Docker instalado?**
+
+Consulte nosso [Guia de Preparação do Ambiente — Docker](docs/PREPARACAO-DO-AMBIENTE-DOCKER.md). Ele apresenta a instalação, configuração e utilização do Docker Desktop ou Docker Engine, além da execução da aplicação com Docker Compose.
+
 #### 1. Obter o código-fonte
 
 ```bash
@@ -174,6 +178,10 @@ Essa opção utiliza uma imagem já construída e publicada no GitHub Container 
 
 É necessário ter Git e Docker com Docker Compose disponíveis. Não é necessário instalar Java, Maven ou PostgreSQL diretamente no computador.
 
+**Precisa preparar o ambiente Docker?**
+
+Consulte nosso [Guia de Preparação do Ambiente — Docker](docs/PREPARACAO-DO-AMBIENTE-DOCKER.md). Ele explica como configurar o Docker, preparar o banco de dados e executar a imagem publicada no GHCR.
+
 #### 1. Obter os arquivos de configuração
 
 Clone o repositório para obter o arquivo `compose.yaml` e o modelo de configuração:
@@ -228,7 +236,7 @@ docker run -d \
   --network financial-api_default \
   --env-file .env \
   -e DB_URL=jdbc:postgresql://db:5432/financial_api \
-  -p 8080:8080 \
+  -p 127.0.0.1:8080:8080 \
   --restart unless-stopped \
   ghcr.io/gmorenos-dev/financial-api:v1.0.1
 ```
