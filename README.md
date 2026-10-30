@@ -58,6 +58,10 @@ A Financial API pode ser executada de três maneiras. Escolha a opção mais ade
 
 Essa opção executa a aplicação diretamente no ambiente Java, utilizando um PostgreSQL já instalado e configurado.
 
+**Ainda não tem Java e PostgreSQL instalados?**
+
+Sem problemas! Antes de executar a aplicação, consulte nosso [Guia de Preparação do Ambiente](docs/PREPARACAO-DO-AMBIENTE.md). Ele apresenta, passo a passo, como instalar as ferramentas necessárias, configurar o banco de dados e verificar se tudo está funcionando.
+
 #### 1. Obter o código-fonte
 
 ```bash
