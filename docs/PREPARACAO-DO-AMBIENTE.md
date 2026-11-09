@@ -1276,6 +1276,218 @@ No Ubuntu/Linux, não é necessário remover a variável, pois ela foi definida 
 
 **Resultado esperado:** aplicação iniciada na porta alternativa `8081`, sem interferir no processo que já utiliza a porta `8080`.
 
+## 8. Solução de Problemas — Windows
+
+Esta seção reúne problemas que podem ocorrer durante a preparação do ambiente Windows e apresenta alternativas para solucioná-los.
+
+Algumas situações foram identificadas durante a validação do guia utilizando o Windows Sandbox. Como esse ambiente possui limitações próprias, nem todos os procedimentos apresentados se aplicam a uma instalação convencional do Windows.
+
+### 8.1. Comando `winget` não reconhecido
+
+Ao executar:
+
+```powershell
+winget install --id Git.Git -e --source winget
+```
+
+Pode ocorrer o erro:
+
+```text
+winget : The term 'winget' is not recognized
+```
+
+Isso significa que o Windows não encontrou o Windows Package Manager (`winget`) disponível no terminal.
+
+**Solução:**
+
+Não é necessário instalar o `winget` para continuar.
+
+Utilize o instalador gráfico oficial do Git para Windows:
+
+https://git-scm.com/install/windows
+
+Baixe a versão correspondente à arquitetura do computador, execute o instalador e mantenha as opções padrão.
+
+Após concluir, feche e abra novamente o PowerShell e verifique:
+
+```powershell
+git --version
+```
+
+Referência: seção 1.2 — Instalação do Git.
+
+### 8.2. Comando `psql` não reconhecido
+
+Após instalar o PostgreSQL, ao executar:
+
+```powershell
+psql --version
+```
+
+Pode ocorrer o erro:
+
+```text
+psql : The term 'psql' is not recognized as the name of a cmdlet
+```
+
+Isso pode acontecer porque o diretório `bin` do PostgreSQL não está incluído na variável de ambiente `PATH`.
+
+**Solução 1 — Utilizar o caminho completo**
+
+A instalação padrão do PostgreSQL 17 no Windows utiliza o seguinte diretório:
+
+```text
+C:\Program Files\PostgreSQL\17\bin
+```
+
+Para verificar se o executável existe:
+
+```powershell
+Test-Path "C:\Program Files\PostgreSQL\17\bin\psql.exe"
+```
+
+O resultado esperado é:
+
+```text
+True
+```
+
+**Solução 2 — Adicionar o PostgreSQL ao PATH da sessão**
+
+Execute:
+
+```powershell
+$pgBin = "C:\Program Files\PostgreSQL\17\bin"
+
+$env:Path = "$pgBin;$env:Path"
+
+psql --version
+```
+
+O resultado deverá indicar a versão do cliente PostgreSQL instalado, por exemplo:
+
+```text
+psql (PostgreSQL) 17.11
+```
+
+Essa configuração é válida somente para a sessão atual do PowerShell.
+
+Em uma instalação convencional do Windows, para manter essa configuração após fechar o terminal, adicione o diretório `bin` do PostgreSQL à variável de ambiente `Path` do sistema e abra um novo terminal.
+
+**Alternativa:** também é possível iniciar o aplicativo `SQL Shell (psql)` pelo menu Iniciar do Windows, sem precisar utilizar o comando diretamente no PowerShell.
+
+Importante: executar `psql --version` verifica a versão do cliente de conexão. Isso não confirma, isoladamente, que o servidor PostgreSQL esteja em execução.
+
+Referência: seção 4.4 — Verificar a instalação do PostgreSQL.
+
+### 8.3. Erro ao executar o instalador do Microsoft Visual C++ Runtime
+
+Durante a instalação do PostgreSQL no Windows, pode aparecer a seguinte mensagem:
+
+```text
+There has been an error.
+
+An error occurred executing the Microsoft VC++ runtime installer.
+```
+
+Uma das causas possíveis é a indisponibilidade do Windows Script Host para executar scripts VBScript. Outra possibilidade é um problema de leitura ou gravação no diretório temporário do Windows.
+
+**Verificações iniciais:**
+
+Confirme se as variáveis temporárias estão configuradas:
+
+```powershell
+$env:TEMP
+$env:TMP
+```
+
+Verifique também se é possível gravar arquivos no diretório temporário:
+
+```powershell
+$teste = Join-Path $env:TEMP "teste-postgresql.txt"
+
+Set-Content -Path $teste -Value "teste"
+
+Remove-Item $teste
+```
+
+Se os comandos forem executados sem erro, o teste básico de gravação no diretório temporário foi concluído.
+
+**Solução alternativa — instalar o Visual C++ manualmente:**
+
+1. Acesse a página oficial da Microsoft:
+
+   https://learn.microsoft.com/pt-br/cpp/windows/latest-supported-vc-redist
+
+2. Baixe o Microsoft Visual C++ Redistributable correspondente à arquitetura do Windows. Para Windows 64 bits, utilize o pacote x64.
+3. Execute o instalador e conclua a instalação.
+4. Execute novamente o instalador do PostgreSQL, utilizando o parâmetro que desabilita a instalação automática do runtime:
+
+```powershell
+.\postgresql-17.x-windows-x64.exe --install_runtimes 0
+```
+
+Substitua o nome do arquivo pelo instalador efetivamente baixado.
+
+O parâmetro `--install_runtimes 0` determina que o instalador do PostgreSQL não tente instalar novamente as bibliotecas do Microsoft Visual C++.
+
+Essa alternativa pressupõe que o runtime necessário já esteja instalado.
+
+Referências:
+
+- https://www.postgresql.org/wiki/Running_%26_Installing_PostgreSQL_on_Native_Windows
+- https://www.enterprisedb.com/docs/supported-open-source/postgresql/installing/command_line_parameters/
+
+### 8.4. Falha ao instalar o WSL2 dentro do Windows Sandbox
+
+Durante a tentativa de executar:
+
+```powershell
+wsl --install
+```
+
+Pode ocorrer uma falha ao habilitar o recurso:
+
+```text
+VirtualMachinePlatform
+```
+
+O WSL2 depende dos recursos opcionais `Virtual Machine Platform` e `Windows Subsystem for Linux`.
+
+Entretanto, o Windows Sandbox possui limitações para habilitar recursos opcionais do Windows por meio de `Turn Windows Features On or Off`.
+
+**Orientação:**
+
+Se estiver utilizando o Windows Sandbox, não utilize esse ambiente para preparar o WSL2.
+
+Existem duas alternativas:
+
+- Executar a Financial API diretamente no Windows, seguindo as etapas deste guia.
+- Instalar e configurar o WSL2 no Windows hospedeiro ou em uma máquina virtual compatível com virtualização aninhada.
+
+Importante: erros de instalação do WSL dentro do Sandbox não significam necessariamente que exista um problema no Windows principal.
+
+Referências:
+
+- https://learn.microsoft.com/en-us/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-faq
+- https://learn.microsoft.com/pt-br/windows/wsl/faq
+
+### 8.5. Particularidades do Windows Sandbox
+
+O Windows Sandbox é um ambiente temporário e isolado, destinado à realização de testes.
+
+Ao encerrar a janela do Sandbox, os programas instalados, arquivos criados e configurações realizadas naquela sessão são descartados.
+
+Por esse motivo:
+
+- A instalação das ferramentas precisa ser repetida ao iniciar uma nova sessão.
+- Alterações temporárias na variável `PATH` não devem ser consideradas configurações permanentes.
+- O ambiente é útil para testar o procedimento de instalação, mas não é indicado como ambiente permanente de desenvolvimento.
+
+**Resultado esperado:** ambiente Windows preparado para executar a Financial API, com Git, Java e PostgreSQL instalados e disponíveis no terminal.
+
+
+
 ## Referências oficiais
 
 As instruções deste guia utilizam como referência a documentação oficial das ferramentas.
